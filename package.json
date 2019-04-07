@@ -1,0 +1,38 @@
+{
+  "name": "up-to-date",
+  "version": "0.1.0",
+  "description": "A Probot app",
+  "author": "Guillaume Clochard <clochard.guillaume@gmail.com>",
+  "license": "MIT",
+  "repository": "https://github.com/guillaumewuip/up-to-date.git",
+  "homepage": "https://github.com/guillaumewuip/up-to-date",
+  "bugs": "https://github.com/guillaumewuip/up-to-date/issues",
+  "keywords": [
+    "probot",
+    "github",
+    "probot-app"
+  ],
+  "engines": {
+    "node": ">= 11.13.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tslint -c tslint.json 'src/**/*.ts'",
+    "start": "probot run ./lib/index.js",
+    "dev": "nodemon"
+  },
+  "dependencies": {
+    "probot": "^9.0.1",
+    "redux": "^4.0.1",
+    "redux-saga": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^11.9.0",
+    "jest": "^24.0.0",
+    "nodemon": "^1.17.2",
+    "smee-client": "^1.0.2",
+    "tslint": "^5.15.0",
+    "tslint-config-airbnb": "^5.11.1",
+    "typescript": "^3.3.1"
+  }
+}
