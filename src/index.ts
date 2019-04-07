@@ -1,23 +1,18 @@
 import {
-  Application,
-  Context,
-} from 'probot';
-
-import {
   createStore,
-  Store,
 } from 'redux';
 
+import bot from './bot';
 import reducer from './reducer';
 
-const bot = (app: Application, store: Store) => {
-  app.on('*', async (context: Context) => {
-    app.log(context);
-  });
-};
+import {
+  Application,
+} from './entities/Application';
 
-export = (app: Application) => {
+module.exports = (app: Application) => {
   const store = createStore(reducer);
 
-  bot(app, store);
+  app.store = store;
+
+  bot(app);
 };

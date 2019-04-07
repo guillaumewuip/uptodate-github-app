@@ -1,0 +1,76 @@
+import {
+  Probot,
+  ApplicationFunction,
+} from 'probot';
+
+import configureStore, {
+  MockStore,
+} from 'redux-mock-store';
+
+import {
+  Store,
+} from 'redux';
+
+import bot from '../src/bot';
+
+import {
+  PushEventPayload,
+} from '../src/entities/eventPayloads';
+
+import {
+  Application,
+} from '../src/entities/Application';
+
+import {
+  repositoryUpdated,
+} from '../src/actions';
+
+const mockStore = configureStore();
+
+describe('bot', () => {
+  let probot: Probot;
+  let store: MockStore;
+
+  beforeEach(() => {
+    probot = new Probot({});
+    store = mockStore();
+
+    const appFn = bot as ApplicationFunction;
+    const app = probot.load(appFn) as Application;
+
+    // @ts-ignore
+    app.githubToken = 'test-token';
+    app.store = store as unknown as Store;
+  });
+
+  it('should get push event on master', async () => {
+    const pushEventPayload: PushEventPayload = {
+      ref: 'refs/heads/master',
+    };
+
+    await probot.receive({
+      id: '1',
+      name: 'push',
+      payload: pushEventPayload,
+    });
+
+    const actions = store.getActions();
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toEqual(repositoryUpdated());
+  });
+
+  it('should not get push event on another branch', async () => {
+    const pushEventPayload: PushEventPayload = {
+      ref: 'refs/heads/dev',
+    };
+
+    await probot.receive({
+      id: '1',
+      name: 'push',
+      payload: pushEventPayload,
+    });
+
+    const actions = store.getActions();
+    expect(actions).toHaveLength(0);
+  });
+});
