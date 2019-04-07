@@ -2,6 +2,8 @@
 
 > A GitHub App built with [Probot](https://github.com/probot/probot) that A Probot app
 
+[![Actions Status](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/badge/guillaumewuip/uptodate-github-app)](https://wdp9fww0r9.execute-api.us-west-2.amazonaws.com/production/results/guillaumewuip/uptodate-github-app)
+
 `TODO`
 
 ## Contributing
