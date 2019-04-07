@@ -1,17 +1,17 @@
 import {
+  WebhookPayloadPush,
+} from '@octokit/webhooks';
+
+import {
   Context,
 } from 'probot';
 
 import {
-  path,
   last,
+  equals,
 } from 'ramda';
 
-export type PushEventPayload = {
-  ref: string,
-};
-
-const branchUpdated = (context: Context<PushEventPayload>): string => {
+const branchUpdated = (context: Context<WebhookPayloadPush>): string => {
   const ref = context.payload.ref;
   const parts = ref.split('/');
 
@@ -20,8 +20,9 @@ const branchUpdated = (context: Context<PushEventPayload>): string => {
   return branch;
 };
 
-export const isMasterUpdated = (context: Context<PushEventPayload>): boolean => {
+export const isDefaultBranchUpdated = (context: Context<WebhookPayloadPush>): boolean => {
   const branch = branchUpdated(context);
+  const defaultBranch = context.payload.repository.default_branch;
 
-  return branch === 'master';
+  return equals(branch, defaultBranch);
 };

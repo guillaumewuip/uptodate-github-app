@@ -14,16 +14,12 @@ import {
 import bot from '../src/bot';
 
 import {
-  PushEventPayload,
-} from '../src/entities/eventPayloads';
-
-import {
   Application,
 } from '../src/entities/Application';
 
 import {
   repositoryUpdated,
-} from '../src/actions';
+} from '../src/actions/updateRepository';
 
 const mockStore = configureStore();
 
@@ -44,8 +40,11 @@ describe('bot', () => {
   });
 
   it('should get push event on master', async () => {
-    const pushEventPayload: PushEventPayload = {
+    const pushEventPayload = {
       ref: 'refs/heads/master',
+      repository: {
+        default_branch: 'master',
+      },
     };
 
     await probot.receive({
@@ -60,8 +59,11 @@ describe('bot', () => {
   });
 
   it('should not get push event on another branch', async () => {
-    const pushEventPayload: PushEventPayload = {
+    const pushEventPayload = {
       ref: 'refs/heads/dev',
+      repository: {
+        default_branch: 'master',
+      },
     };
 
     await probot.receive({

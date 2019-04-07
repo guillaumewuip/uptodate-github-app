@@ -3,21 +3,24 @@ import {
 } from 'probot';
 
 import {
+  WebhookPayloadPush,
+} from '@octokit/webhooks';
+
+import {
   Application,
 } from './entities/Application';
 
 import {
-  PushEventPayload,
-  isMasterUpdated,
+  isDefaultBranchUpdated,
 } from './entities/eventPayloads';
 
 import {
   repositoryUpdated,
-} from './actions';
+} from './actions/updateRepository';
 
 export = (app: Application) => {
-  app.on('push', async (context: Context<PushEventPayload>) => {
-    if (isMasterUpdated(context)) {
+  app.on('push', async (context: Context<WebhookPayloadPush>) => {
+    if (isDefaultBranchUpdated(context)) {
       app.store.dispatch(repositoryUpdated());
     }
   });

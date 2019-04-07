@@ -9,7 +9,7 @@ import {
   Application,
 } from './entities/Application';
 
-module.exports = (app: Application) => {
+export = (app: Application) => {
   const store = createStore(reducer);
 
   app.store = store;
