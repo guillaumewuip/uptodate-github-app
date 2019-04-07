@@ -19,6 +19,7 @@
     "build": "tsc -p tsconfig.json",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
     "start": "probot run ./lib/index.js",
+    "test": "jest",
     "dev": "nodemon"
   },
   "dependencies": {
@@ -27,10 +28,13 @@
     "redux-saga": "^1.0.2"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.11",
     "@types/node": "^11.9.0",
-    "jest": "^24.0.0",
+    "jest": "^24.7.1",
+    "nock": "^10.0.6",
     "nodemon": "^1.17.2",
     "smee-client": "^1.0.2",
+    "ts-jest": "^24.0.2",
     "tslint": "^5.15.0",
     "tslint-config-airbnb": "^5.11.1",
     "typescript": "^3.3.1"
