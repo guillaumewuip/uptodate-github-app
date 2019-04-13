@@ -14,11 +14,11 @@ import {
 import {
   REPOSITORY_UPDATED,
   repositoryUpdated,
-} from '../../src/actions/updateRepository';
+} from '../actions/updateRepository';
 
 import {
   getRepositoryIdentifier,
-} from '../../src/helpers';
+} from '../helpers';
 
 import {
   testSaga,
@@ -26,12 +26,12 @@ import {
 
 import {
   updateRepositorySaga,
-} from '../../src/sagas/updateRepository';
+} from './updateRepository';
 import {
   RepositoryUpdateTasks,
   handleRepositoryUpdate,
   updateRepositoriesSaga,
-} from '../../src/sagas/updateRepositories';
+} from './updateRepositories';
 
 describe('sagas/updateRepositories', () => {
   const app = {

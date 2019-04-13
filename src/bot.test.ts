@@ -11,15 +11,15 @@ import {
   Store,
 } from 'redux';
 
-import bot from '../src/bot';
+import bot from './bot';
 
 import {
   Application,
-} from '../src/entities/Application';
+} from './entities/Application';
 
 import {
   REPOSITORY_UPDATED,
-} from '../src/actions/updateRepository';
+} from './actions/updateRepository';
 
 const mockStore = configureStore();
 

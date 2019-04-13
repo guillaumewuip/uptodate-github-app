@@ -17,12 +17,12 @@ import {
 
 import {
   RecursivePartial,
-} from '../../src/types';
+} from '../types';
 
 import {
   REBASE_LABEL,
   updateRepositorySaga,
-} from '../../src/sagas/updateRepository';
+} from './updateRepository';
 
 type WebhookPayloadPushContext = Context<WebhookPayloadPush>;
 type OctokitPullsList = WebhookPayloadPushContext['github']['pulls']['list'];
