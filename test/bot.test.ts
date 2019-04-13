@@ -18,7 +18,7 @@ import {
 } from '../src/entities/Application';
 
 import {
-  repositoryUpdated,
+  REPOSITORY_UPDATED,
 } from '../src/actions/updateRepository';
 
 const mockStore = configureStore();
@@ -43,6 +43,8 @@ describe('bot', () => {
     const pushEventPayload = {
       ref: 'refs/heads/master',
       repository: {
+        id: 1,
+        fullName: 'guillaumewuip/test',
         default_branch: 'master',
       },
     };
@@ -55,13 +57,16 @@ describe('bot', () => {
 
     const actions = store.getActions();
     expect(actions).toHaveLength(1);
-    expect(actions[0]).toEqual(repositoryUpdated());
+
+    expect(actions[0].type).toEqual(REPOSITORY_UPDATED);
   });
 
   it('should not get push event on another branch', async () => {
     const pushEventPayload = {
       ref: 'refs/heads/dev',
       repository: {
+        id: 1,
+        fullName: 'guillaumewuip/test',
         default_branch: 'master',
       },
     };

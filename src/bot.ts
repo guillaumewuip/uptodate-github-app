@@ -20,8 +20,14 @@ import {
 
 export = (app: Application) => {
   app.on('push', async (context: Context<WebhookPayloadPush>) => {
-    if (isDefaultBranchUpdated(context)) {
-      app.store.dispatch(repositoryUpdated());
+    if (!isDefaultBranchUpdated(context)) {
+      return;
     }
+
+    const action = repositoryUpdated(
+      context.payload.repository,
+      context,
+    );
+    app.store.dispatch(action);
   });
 };
