@@ -12,12 +12,14 @@ export type RepositoryUpdatedAction = {
   type: typeof REPOSITORY_UPDATED,
   context: Context,
   payload: {
-    id: number,
-    fullName: string,
+    repository: PayloadRepository,
   },
 };
 
-export const repositoryUpdated = (repository: PayloadRepository, context: Context) => ({
+export const repositoryUpdated = (
+  repository: PayloadRepository,
+  context: Context,
+): RepositoryUpdatedAction => ({
   context,
   type: 'REPOSITORY_UPDATED',
   payload: {
