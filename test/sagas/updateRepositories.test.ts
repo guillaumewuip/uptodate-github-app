@@ -24,7 +24,9 @@ import {
   testSaga,
 } from 'redux-saga-test-plan';
 
-import updateRepositorySaga from '../../src/sagas/updateRepository';
+import {
+  updateRepositorySaga,
+} from '../../src/sagas/updateRepository';
 import {
   RepositoryUpdateTasks,
   handleRepositoryUpdate,
@@ -91,6 +93,7 @@ describe('sagas/updateRepositories', () => {
         .next()
         .fork(
           updateRepositorySaga,
+          app,
           context,
         )
 
@@ -123,6 +126,7 @@ describe('sagas/updateRepositories', () => {
         .next()
         .fork(
           updateRepositorySaga,
+          app,
           context,
         )
 

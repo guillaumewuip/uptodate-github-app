@@ -22,7 +22,9 @@ import {
   getRepositoryIdentifier,
 } from '../helpers';
 
-import updateRepositorySaga from './updateRepository';
+import {
+  updateRepositorySaga,
+} from './updateRepository';
 
 export type RepositoryUpdateTasks = {
   [repositoryIdentifier: string]: Task | undefined,
@@ -55,6 +57,7 @@ export function* handleRepositoryUpdate(
 
   repositoriesUpdateTasks[repositoryIdentifier] = yield fork(
     updateRepositorySaga,
+    app,
     context,
   );
 }
