@@ -1,10 +1,16 @@
 import Git from 'nodegit';
 
-export const ERRORS = {
-  CLONE: 'CLONE_ERROR',
-  REBASE: 'REBASE_ERROR',
-  CONNECT: 'CONNECT_ERROR',
-  PUSH: 'PUSH_ERROR',
+export type ERROR_TYPE =
+  'CLONE_ERROR' |
+  'REBASE_ERROR' |
+  'PUSH_ERROR';
+
+export type RebaseError = Error & {
+  type: ERROR_TYPE,
+};
+
+export const isRebaseError = (error: any): error is RebaseError => {
+  return error.type !== undefined;
 };
 
 const clone = async (
@@ -23,7 +29,7 @@ const clone = async (
 
     return repo;
   } catch (error) {
-    error.type = ERRORS.CLONE;
+    error.type = 'CLONE_ERROR';
 
     throw error;
   }
@@ -46,7 +52,7 @@ const rebase = async (
       async () => {}, // fix for bad function type
     );
   } catch (error) {
-    error.type = ERRORS.REBASE;
+    error.type = 'REBASE_ERROR';
 
     throw error;
   }
@@ -64,7 +70,7 @@ const push = async ( // TODO find a way to do a force-with-lease
       {},
     );
   } catch (error) {
-    error.type = ERRORS.CONNECT;
+    error.type = 'PUSH_ERROR';
 
     throw error;
   }
@@ -73,7 +79,7 @@ const push = async ( // TODO find a way to do a force-with-lease
   if (!connected) {
     const error = new Error('Can\'t connect');
     // @ts-ignore
-    error.type = ERRORS.CONNECT;
+    error.type = 'PUSH_ERROR';
 
     throw error;
   }
@@ -88,7 +94,7 @@ const push = async ( // TODO find a way to do a force-with-lease
       refSpecs,
     );
   } catch (error) {
-    error.type = ERRORS.PUSH;
+    error.type = 'PUSH_ERROR';
 
     throw error;
   }

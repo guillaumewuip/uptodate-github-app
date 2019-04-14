@@ -83,7 +83,6 @@ describe('services/git', () => {
 
       const {
         cloneRebaseAndPush,
-        ERRORS,
       } = require('./git');
 
       const url = 'https://github.com/guillaumewuip/test-github-app';
@@ -101,7 +100,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual(ERRORS.CLONE);
+        expect(error.type).toEqual('CLONE_ERROR');
       }
     });
 
@@ -122,7 +121,6 @@ describe('services/git', () => {
 
       const {
         cloneRebaseAndPush,
-        ERRORS,
       } = require('./git');
 
       const url = 'https://github.com/guillaumewuip/test-github-app';
@@ -140,7 +138,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual(ERRORS.REBASE);
+        expect(error.type).toEqual('REBASE_ERROR');
       }
     });
 
@@ -168,7 +166,6 @@ describe('services/git', () => {
 
       const {
         cloneRebaseAndPush,
-        ERRORS,
       } = require('./git');
 
       const url = 'https://github.com/guillaumewuip/test-github-app';
@@ -186,7 +183,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual(ERRORS.CONNECT);
+        expect(error.type).toEqual('PUSH_ERROR');
       }
     });
 
@@ -212,7 +209,6 @@ describe('services/git', () => {
 
       const {
         cloneRebaseAndPush,
-        ERRORS,
       } = require('./git');
 
       const url = 'https://github.com/guillaumewuip/test-github-app';
@@ -230,7 +226,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual(ERRORS.CONNECT);
+        expect(error.type).toEqual('PUSH_ERROR');
       }
     });
 
@@ -258,7 +254,6 @@ describe('services/git', () => {
 
       const {
         cloneRebaseAndPush,
-        ERRORS,
       } = require('./git');
 
       const url = 'https://github.com/guillaumewuip/test-github-app';
@@ -276,7 +271,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual(ERRORS.PUSH);
+        expect(error.type).toEqual('PUSH_ERROR');
       }
     });
   });
