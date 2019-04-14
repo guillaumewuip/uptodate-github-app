@@ -11,6 +11,19 @@ import {
   equals,
 } from 'ramda';
 
+export type WebhookPayloadPushAuthenticated = WebhookPayloadPush & {
+  installation: {
+    id: number,
+    node_id: string,
+  },
+};
+
+export const isAuthenticated = (
+  context: Context<WebhookPayloadPush>,
+): context is Context<WebhookPayloadPushAuthenticated> =>
+  // @ts-ignore
+  context.payload.installation !== undefined;
+
 const branchUpdated = (context: Context<WebhookPayloadPush>): string => {
   const ref = context.payload.ref;
   const parts = ref.split('/');

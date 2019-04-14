@@ -11,6 +11,8 @@ import {
 } from './entities/Application';
 
 import {
+  WebhookPayloadPushAuthenticated,
+  isAuthenticated,
   isDefaultBranchUpdated,
 } from './entities/eventPayloads';
 
@@ -21,6 +23,12 @@ import {
 export = (app: Application) => {
   app.on('push', async (context: Context<WebhookPayloadPush>) => {
     if (!isDefaultBranchUpdated(context)) {
+      return;
+    }
+
+    if (!isAuthenticated(context)) {
+      app.log('Received non-authenticated payload');
+
       return;
     }
 

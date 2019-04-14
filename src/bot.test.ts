@@ -47,6 +47,9 @@ describe('bot', () => {
         fullName: 'guillaumewuip/test',
         default_branch: 'master',
       },
+      installation: {
+        id: 1,
+      },
     };
 
     await probot.receive({
@@ -68,6 +71,9 @@ describe('bot', () => {
         id: 1,
         fullName: 'guillaumewuip/test',
         default_branch: 'master',
+      },
+      installation: {
+        id: 1,
       },
     };
 

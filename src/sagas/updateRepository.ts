@@ -8,10 +8,6 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  WebhookPayloadPush,
-} from '@octokit/webhooks';
-
-import {
   Response,
   PullsListResponseItem,
 } from '@octokit/rest';
@@ -35,6 +31,7 @@ import {
 } from '../entities/PullsListResponseItem';
 
 import {
+  WebhookPayloadPushAuthenticated,
   defaultBranch,
 } from '../entities/eventPayloads';
 
@@ -44,9 +41,31 @@ import {
 
 export const REBASE_LABEL = 'keep-rebased';
 
+function* getRepositoryAccessToken(
+  app: Application,
+  context: Context<WebhookPayloadPushAuthenticated>,
+): SagaIterator {
+  const {
+    payload: {
+      installation: {
+        id,
+      },
+    },
+  } = context;
+
+  const token = yield call(
+    app.app.getInstallationAccessToken,
+    {
+      installationId: id,
+    },
+  );
+
+  return token;
+}
+
 export function* updateRepositorySaga(
   app: Application,
-  context: Context<WebhookPayloadPush>,
+  context: Context<WebhookPayloadPushAuthenticated>,
 ): SagaIterator {
   const {
     owner,
@@ -88,11 +107,26 @@ export function* updateRepositorySaga(
     return;
   }
 
+  let repositoryToken: string;
+
+  try {
+    repositoryToken = yield call(
+      getRepositoryAccessToken,
+      app,
+      context,
+    );
+  } catch (error) {
+    app.log(`Can't get repositoryToken for ${fullName}`);
+
+    return;
+  }
+
   const pullsUpdates = map(
     (pull: PullsListResponseItem) => call(
       updatePullSaga,
       app,
       context,
+      repositoryToken,
       pull,
     ),
     pullsToUpdate,

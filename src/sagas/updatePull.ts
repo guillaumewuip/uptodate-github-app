@@ -3,12 +3,12 @@ import {
 } from 'redux-saga';
 
 import {
-  PullsListResponseItem,
-} from '@octokit/rest';
+  call,
+} from 'redux-saga/effects';
 
 import {
-  WebhookPayloadPush,
-} from '@octokit/webhooks';
+  PullsListResponseItem,
+} from '@octokit/rest';
 
 import {
   Context,
@@ -18,10 +18,19 @@ import {
   Application,
 } from '../entities/Application';
 
+import {
+  WebhookPayloadPushAuthenticated,
+} from '../entities/eventPayloads';
+
+import {
+  ERRORS,
+  cloneRebaseAndPush,
+} from '../services/git';
+
 export function* updatePullSaga(
   app: Application,
-  context: Context<WebhookPayloadPush>,
+  context: Context<WebhookPayloadPushAuthenticated>,
+  token: string,
   pull: PullsListResponseItem,
 ): SagaIterator {
-
 }

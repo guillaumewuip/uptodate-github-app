@@ -16,12 +16,16 @@ import {
 } from 'probot';
 
 import {
-  WebhookPayloadPush,
-} from '@octokit/webhooks';
+  find,
+} from 'ramda';
 
 import {
   PullsListResponseItem,
 } from '@octokit/rest';
+
+import {
+  WebhookPayloadPushAuthenticated,
+} from '../entities/eventPayloads';
 
 import {
   RecursivePartial,
@@ -36,17 +40,36 @@ import {
   updateRepositorySaga,
 } from './updateRepository';
 
-type WebhookPayloadPushContext = Context<WebhookPayloadPush>;
+type WebhookPayloadPushContext = Context<WebhookPayloadPushAuthenticated>;
 type OctokitPullsList = WebhookPayloadPushContext['github']['pulls']['list'];
+type OctokitFindRepoInstallation =
+  WebhookPayloadPushContext['github']['apps']['findRepoInstallation'];
+
+type OctokitGetInstallationToken = Application['app']['getInstallationAccessToken'];
 
 describe('sagas/updateRepository', () => {
   const fullName = 'guillaumewuip/uptodate-github-app';
+  const token = '1223412432';
+
+  const getInstallationAccessToken = jest.fn().mockReturnValue(token);
+
+  const mockedApp: RecursivePartial<Application> = {
+    log: jest.fn() as unknown as Application['log'],
+    app: {
+      getInstallationAccessToken: (
+        getInstallationAccessToken as unknown as OctokitGetInstallationToken
+      ),
+    },
+  };
+
+  const app = mockedApp as Application;
+
+  beforeEach(() => {
+    (app.log as unknown as jest.Mock).mockReset();
+    (app.app.getInstallationAccessToken as unknown as jest.Mock).mockReset();
+  });
 
   it('should call updatePullSaga for every PR to update', async () => {
-    const app = {
-      log: jest.fn(),
-    } as unknown as Application;
-
     const data: RecursivePartial<PullsListResponseItem[]> = [
       {
         id: 1,
@@ -70,6 +93,12 @@ describe('sagas/updateRepository', () => {
       data,
     });
 
+    const findRepoInstallation = jest.fn().mockResolvedValue({
+      data: {
+        id: 1,
+      },
+    });
+
     const context: RecursivePartial<WebhookPayloadPushContext> = {
       payload: {
         repository: {
@@ -79,10 +108,16 @@ describe('sagas/updateRepository', () => {
           name: 'uptodate-github-app',
           full_name: 'guillaumewuip/uptodate-github-app',
         },
+        installation: {
+          id: 1,
+        },
       },
       github: {
         pulls: {
           list: listPulls as unknown as OctokitPullsList,
+        },
+        apps: {
+          findRepoInstallation: findRepoInstallation as unknown as OctokitFindRepoInstallation,
         },
       },
     };
@@ -98,15 +133,15 @@ describe('sagas/updateRepository', () => {
     )
       .silentRun();
 
-    expect(call).toHaveLength(3); // listPulls, updatePull and all
-    expect(call[1].payload.fn).toEqual(updatePullSaga);
+    const updatePullCall = find<typeof call[0]>(
+      (effect: typeof call[0]) => effect.payload.fn === updatePullSaga,
+      call,
+    );
+
+    expect(updatePullCall).not.toBeUndefined();
   });
 
   it('should handle fetch PRs error', async () => {
-    const app = {
-      log: jest.fn(),
-    } as unknown as Application;
-
     const listPulls = jest.fn().mockRejectedValue(new Error());
 
     const context: RecursivePartial<WebhookPayloadPushContext> = {
@@ -117,6 +152,9 @@ describe('sagas/updateRepository', () => {
           },
           name: 'uptodate-github-app',
           full_name: fullName,
+        },
+        installation: {
+          id: 1,
         },
       },
       github: {
@@ -138,11 +176,7 @@ describe('sagas/updateRepository', () => {
     );
   });
 
-  it('should handle updatePull error', async () => {
-    const app = {
-      log: jest.fn(),
-    } as unknown as Application;
-
+  it('should handle getRepositoryAccessToken error', async () => {
     const data: RecursivePartial<PullsListResponseItem[]> = [
       {
         id: 1,
@@ -153,6 +187,8 @@ describe('sagas/updateRepository', () => {
         ],
       },
     ];
+
+    const findRepoInstallation = jest.fn().mockRejectedValue(new Error(''));
 
     const listPulls = jest.fn().mockResolvedValue({
       data,
@@ -171,6 +207,69 @@ describe('sagas/updateRepository', () => {
       github: {
         pulls: {
           list: listPulls as unknown as OctokitPullsList,
+        },
+        apps: {
+          findRepoInstallation: findRepoInstallation as unknown as OctokitFindRepoInstallation,
+        },
+      },
+    };
+
+    await expectSaga(
+      updateRepositorySaga,
+      app,
+      context as unknown as Context,
+    )
+      .provide([
+        [callMatcher.fn(updatePullSaga), throwError(new Error())],
+      ])
+      .run(false);
+
+    expect(app.log).toHaveBeenLastCalledWith(
+      `Can't get repositoryToken for ${fullName}`,
+    );
+  });
+
+  it('should handle updatePull error', async () => {
+    const data: RecursivePartial<PullsListResponseItem[]> = [
+      {
+        id: 1,
+        labels: [
+          {
+            name: REBASE_LABEL,
+          },
+        ],
+      },
+    ];
+
+    const findRepoInstallation = jest.fn().mockResolvedValue({
+      data: {
+        id: 1,
+      },
+    });
+
+    const listPulls = jest.fn().mockResolvedValue({
+      data,
+    });
+
+    const context: RecursivePartial<WebhookPayloadPushContext> = {
+      payload: {
+        repository: {
+          owner: {
+            login: 'guillaumewuip',
+          },
+          name: 'uptodate-github-app',
+          full_name: 'guillaumewuip/uptodate-github-app',
+        },
+        installation: {
+          id: 1,
+        },
+      },
+      github: {
+        pulls: {
+          list: listPulls as unknown as OctokitPullsList,
+        },
+        apps: {
+          findRepoInstallation: findRepoInstallation as unknown as OctokitFindRepoInstallation,
         },
       },
     };
