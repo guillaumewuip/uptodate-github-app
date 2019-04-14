@@ -30,7 +30,7 @@ import {
 
 import {
   hasLabel,
-} from '../helpers';
+} from '../entities/PullsListResponseItem';
 
 export const REBASE_LABEL = 'keep-rebased';
 

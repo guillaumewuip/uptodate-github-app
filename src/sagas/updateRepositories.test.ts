@@ -18,7 +18,7 @@ import {
 
 import {
   getRepositoryIdentifier,
-} from '../helpers';
+} from '../entities/PayloadRepository';
 
 import {
   testSaga,
