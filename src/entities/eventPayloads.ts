@@ -20,9 +20,11 @@ const branchUpdated = (context: Context<WebhookPayloadPush>): string => {
   return branch;
 };
 
+export const defaultBranch = (context: Context<WebhookPayloadPush>): string =>
+  context.payload.repository.default_branch;
+
 export const isDefaultBranchUpdated = (context: Context<WebhookPayloadPush>): boolean => {
   const branch = branchUpdated(context);
-  const defaultBranch = context.payload.repository.default_branch;
 
-  return equals(branch, defaultBranch);
+  return equals(branch, defaultBranch(context));
 };

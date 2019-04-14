@@ -32,6 +32,10 @@ import {
   hasLabel,
 } from '../entities/PullsListResponseItem';
 
+import {
+  defaultBranch,
+} from '../entities/eventPayloads';
+
 export const REBASE_LABEL = 'keep-rebased';
 
 export function* updateRepositorySaga(
@@ -44,6 +48,8 @@ export function* updateRepositorySaga(
     full_name: fullName,
   } = context.payload.repository;
 
+  const defaultRepositoryBranch = defaultBranch(context);
+
   app.log(`Fetching pull request for ${fullName}`);
 
   try {
@@ -52,7 +58,7 @@ export function* updateRepositorySaga(
       {
         owner: owner.login,
         repo: name,
-        base: 'master', // TODO use real base
+        base: defaultRepositoryBranch,
       },
     );
 
