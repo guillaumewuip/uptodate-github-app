@@ -4,6 +4,7 @@ import {
 
 import {
   call,
+  all,
 } from 'redux-saga/effects';
 
 import {
@@ -18,6 +19,7 @@ import {
 import {
   filter,
   isEmpty,
+  map,
 } from 'ramda';
 
 import {
@@ -36,6 +38,10 @@ import {
   defaultBranch,
 } from '../entities/eventPayloads';
 
+import {
+  updatePullSaga,
+} from '../sagas/updatePull';
+
 export const REBASE_LABEL = 'keep-rebased';
 
 export function* updateRepositorySaga(
@@ -50,10 +56,10 @@ export function* updateRepositorySaga(
 
   const defaultRepositoryBranch = defaultBranch(context);
 
-  app.log(`Fetching pull request for ${fullName}`);
+  let response: Response<PullsListResponseItem[]>;
 
   try {
-    const response: Response<PullsListResponseItem[]> = yield call(
+    response = yield call(
       context.github.pulls.list,
       {
         owner: owner.login,
@@ -62,19 +68,39 @@ export function* updateRepositorySaga(
       },
     );
 
-    const pulls = response.data;
-
-    const pullsToUpdate = filter(
-      hasLabel(REBASE_LABEL), // TODO get config
-      pulls,
-    );
-
-    if (isEmpty(pullsToUpdate)) {
-      app.log(`No pull requests to update for ${fullName}`);
-
-      return;
-    }
+    app.log(`Pull requests fetched for ${fullName}`);
   } catch (error) {
-    // TODO
+    app.log(`Can't fetch pull requests for ${fullName}`);
+
+    return;
+  }
+
+  const pulls = response.data;
+
+  const pullsToUpdate = filter(
+    hasLabel(REBASE_LABEL), // TODO get config
+    pulls,
+  );
+
+  if (isEmpty(pullsToUpdate)) {
+    app.log(`No pull requests to update for ${fullName}`);
+
+    return;
+  }
+
+  const pullsUpdates = map(
+    (pull: PullsListResponseItem) => call(
+      updatePullSaga,
+      app,
+      context,
+      pull,
+    ),
+    pullsToUpdate,
+  );
+
+  try {
+    yield all(pullsUpdates);
+  } catch (error) {
+    app.log(`Unknown error updating pull requests for ${fullName}`);
   }
 }
