@@ -6,6 +6,17 @@
 
 `TODO`
 
+## Roadmap
+
+- [x] keep PR rebased on base branch 
+- [ ] better error message (with conflict ?) for rebase
+- [ ] use config file for rebase flag name
+- [ ] force-with-lease instead of force
+- [ ] refacto logs
+- [ ] write README
+- [ ] merge PR once rebased if flag
+- [ ] add merge update method via config
+
 ## Contributing
 
 If you have suggestions for how up-to-date could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
