@@ -11,16 +11,28 @@ describe('services/git', () => {
         push: jest.fn().mockResolvedValue(undefined),
       };
 
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
       const mockedRepo = {
         rebaseBranches: jest.fn().mockResolvedValue(undefined),
         getRemote: jest.fn().mockResolvedValue(mockedRemote),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        fetch: jest.fn().mockResolvedValue({}),
       };
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
         },
       }));
 
@@ -73,9 +85,6 @@ describe('services/git', () => {
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
-        Signature: {
-          now: jest.fn().mockImplementation(() => mockedSignature),
-        },
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.reject(mockedCloneError)),
         },
@@ -107,15 +116,33 @@ describe('services/git', () => {
     it('should handle rebase error', async () => {
       const mockedRebaseError = new Error('');
 
+      const mockedRemote = {
+        connect: jest.fn().mockResolvedValue(undefined),
+        connected: jest.fn().mockReturnValue(true),
+        push: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
       const mockedRepo = {
         rebaseBranches: jest.fn().mockRejectedValue(mockedRebaseError),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        getRemote: jest.fn().mockResolvedValue(mockedRemote),
       };
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
         },
       }));
 
@@ -151,16 +178,28 @@ describe('services/git', () => {
         push: jest.fn().mockResolvedValue(undefined),
       };
 
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
       const mockedRepo = {
         rebaseBranches: jest.fn().mockResolvedValue(mockedRemote),
         getRemote: jest.fn().mockResolvedValue(mockedRemote),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        fetch: jest.fn().mockResolvedValue({}),
       };
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
         },
       }));
 
@@ -194,16 +233,28 @@ describe('services/git', () => {
         push: jest.fn().mockResolvedValue(undefined),
       };
 
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
       const mockedRepo = {
         rebaseBranches: jest.fn().mockResolvedValue(mockedRemote),
         getRemote: jest.fn().mockResolvedValue(mockedRemote),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        fetch: jest.fn().mockResolvedValue({}),
       };
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
         },
       }));
 
@@ -239,16 +290,28 @@ describe('services/git', () => {
         push: jest.fn().mockRejectedValue(mockedPushError),
       };
 
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
       const mockedRepo = {
         rebaseBranches: jest.fn().mockResolvedValue(mockedRemote),
         getRemote: jest.fn().mockResolvedValue(mockedRemote),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        fetch: jest.fn().mockResolvedValue({}),
       };
 
       jest.resetModules();
       jest.mock('nodegit', () => ({
         Clone: {
           clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
         },
       }));
 
@@ -272,6 +335,63 @@ describe('services/git', () => {
         );
       } catch (error) {
         expect(error.type).toEqual('PUSH_ERROR');
+      }
+    });
+
+    it('should handle lease error', async () => {
+      const mockedPushError = new Error('');
+
+      const mockedRemote = {
+        connect: jest.fn().mockResolvedValue(undefined),
+        connected: jest.fn().mockReturnValue(true),
+        push: jest.fn().mockRejectedValue(mockedPushError),
+      };
+
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(false),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
+      const mockedRepo = {
+        rebaseBranches: jest.fn().mockResolvedValue(mockedRemote),
+        getRemote: jest.fn().mockResolvedValue(mockedRemote),
+        defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        fetch: jest.fn().mockResolvedValue({}),
+      };
+
+      jest.resetModules();
+      jest.mock('nodegit', () => ({
+        Clone: {
+          clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
+        },
+      }));
+
+      const {
+        cloneRebaseAndPush,
+      } = require('./git');
+
+      const url = 'https://github.com/guillaumewuip/test-github-app';
+      const dir = '/tmp/guillaumewuip-test';
+      const baseBranch = 'master';
+      const branch = 'test-pr1';
+
+      expect.assertions(1);
+
+      try {
+        await cloneRebaseAndPush(
+          url,
+          dir,
+          branch,
+          baseBranch,
+        );
+      } catch (error) {
+        expect(error.type).toEqual('LEASE_ERROR');
       }
     });
   });

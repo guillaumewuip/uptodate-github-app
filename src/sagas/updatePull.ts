@@ -42,6 +42,7 @@ export const errorMessages: {
   CLONE_ERROR: 'Sorry ! Can\'t clone the repo.',
   PUSH_ERROR: 'Sorry ! Can\'t push the rebase.',
   REBASE_ERROR: 'Ooops ! Can\‘t rebase the PR. You probably have conflicts.',
+  LEASE_ERROR: 'Oh ! It seems the remote branch has been updated. Can\'t force push safetly',
   UNKNOWN_ERROR: 'An unknown error happend updating the pull request.',
 };
 

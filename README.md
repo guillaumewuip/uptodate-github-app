@@ -11,7 +11,7 @@
 - [x] keep PR rebased on base branch 
 - [ ] better error message (with conflict ?) for rebase
 - [ ] use config file for rebase flag name
-- [ ] force-with-lease instead of force
+- [x] force-with-lease instead of force
 - [ ] refacto logs
 - [ ] write README
 - [ ] merge PR once rebased if flag

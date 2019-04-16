@@ -3,7 +3,8 @@ import Git from 'nodegit';
 export type ERROR_TYPE =
   'CLONE_ERROR' |
   'REBASE_ERROR' |
-  'PUSH_ERROR';
+  'PUSH_ERROR' |
+  'LEASE_ERROR';
 
 export type RebaseError = Error & {
   type: ERROR_TYPE,
@@ -58,12 +59,25 @@ const rebase = async (
   }
 };
 
-const push = async ( // TODO find a way to do a force-with-lease
+const fetch = async (
   repo: Git.Repository,
+  remote: Git.Remote,
+) => {
+  try {
+    await repo.fetch(
+      remote,
+    );
+  } catch (error) {
+    error.type = 'PUSH_ERROR';
+
+    throw error;
+  }
+};
+
+const push = async (
+  remote: Git.Remote,
   branchHeadRefName: string,
 ) => {
-  const remote = await repo.getRemote('origin');
-
   try {
     await remote.connect(
       Git.Enums.DIRECTION.PUSH,
@@ -100,6 +114,18 @@ const push = async ( // TODO find a way to do a force-with-lease
   }
 };
 
+const getRefSha1 = async (
+  repo: Git.Repository,
+  branchName: string,
+) => {
+  const ref = await Git.Reference.lookup(
+    repo,
+    branchName,
+  );
+
+  return ref.target();
+};
+
 export const cloneRebaseAndPush = async (
   repoUrl: string,
   directory: string,
@@ -114,8 +140,15 @@ export const cloneRebaseAndPush = async (
 
   const signature = repo.defaultSignature();
 
+  const remote = await repo.getRemote('origin');
+
   const branchHeadRefName = `refs/heads/${branch}`; // checkouted in clone
   const baseBranchHeadRefName = `refs/remotes/origin/${baseBranch}`;
+
+  const baseBranchHeadSha1 = await getRefSha1(
+    repo,
+    baseBranchHeadRefName,
+  );
 
   await rebase(
     repo,
@@ -124,8 +157,30 @@ export const cloneRebaseAndPush = async (
     signature,
   );
 
-  await push(
+  await fetch(
     repo,
+    remote,
+  );
+
+  const newBaseBranchHeadSha1 = await getRefSha1(
+    repo,
+    baseBranchHeadRefName,
+  );
+
+  const isBaseBranchUpToDate = newBaseBranchHeadSha1.equal(
+    baseBranchHeadSha1,
+  );
+
+  if (!isBaseBranchUpToDate) {
+    // something as been pushed on the remote branch during rebase
+    const error = new Error('Remote has changed') as RebaseError;
+    error.type = 'LEASE_ERROR';
+
+    throw error;
+  }
+
+  await push(
+    remote,
     branchHeadRefName,
   );
 };
