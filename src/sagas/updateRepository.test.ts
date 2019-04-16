@@ -28,6 +28,11 @@ import {
 } from '../entities/eventPayloads';
 
 import {
+  Config,
+  defaultConfig,
+} from '../entities/config';
+
+import {
   RecursivePartial,
 } from '../types';
 
@@ -36,7 +41,6 @@ import {
 } from './updatePull';
 
 import {
-  REBASE_LABEL,
   updateRepositorySaga,
 } from './updateRepository';
 
@@ -75,7 +79,7 @@ describe('sagas/updateRepository', () => {
         id: 1,
         labels: [
           {
-            name: REBASE_LABEL,
+            name: defaultConfig.keepUpdatedLabel,
           },
         ],
       },
@@ -131,7 +135,86 @@ describe('sagas/updateRepository', () => {
       app,
       context as unknown as Context,
     )
-      .silentRun();
+      .run(false);
+
+    const updatePullCall = find<typeof call[0]>(
+      (effect: typeof call[0]) => effect.payload.fn === updatePullSaga,
+      call,
+    );
+
+    expect(updatePullCall).not.toBeUndefined();
+  });
+
+  it('should call updatePullSaga for every PR to update with custom label', async () => {
+    const label = 'my-custom-label';
+
+    const data: RecursivePartial<PullsListResponseItem[]> = [
+      {
+        id: 1,
+        labels: [
+          {
+            name: label,
+          },
+        ],
+      },
+      {
+        id: 2,
+        labels: [
+          {
+            name: 'toto',
+          },
+        ],
+      },
+    ];
+
+    const listPulls = jest.fn().mockResolvedValue({
+      data,
+    });
+
+    const findRepoInstallation = jest.fn().mockResolvedValue({
+      data: {
+        id: 1,
+      },
+    });
+
+    const config: Config = {
+      keepUpdatedLabel: label,
+    };
+
+    const context: RecursivePartial<WebhookPayloadPushContext> = {
+      config: jest.fn().mockResolvedValue(config),
+      payload: {
+        repository: {
+          owner: {
+            login: 'guillaumewuip',
+          },
+          name: 'uptodate-github-app',
+          full_name: 'guillaumewuip/uptodate-github-app',
+        },
+        installation: {
+          id: 1,
+        },
+      },
+      github: {
+        pulls: {
+          list: listPulls as unknown as OctokitPullsList,
+        },
+        apps: {
+          findRepoInstallation: findRepoInstallation as unknown as OctokitFindRepoInstallation,
+        },
+      },
+    };
+
+    const {
+      effects: {
+        call,
+      },
+    } = await expectSaga(
+      updateRepositorySaga,
+      app,
+      context as unknown as Context,
+    )
+      .run(false);
 
     const updatePullCall = find<typeof call[0]>(
       (effect: typeof call[0]) => effect.payload.fn === updatePullSaga,
@@ -182,7 +265,7 @@ describe('sagas/updateRepository', () => {
         id: 1,
         labels: [
           {
-            name: REBASE_LABEL,
+            name: defaultConfig.keepUpdatedLabel,
           },
         ],
       },
@@ -235,7 +318,7 @@ describe('sagas/updateRepository', () => {
         id: 1,
         labels: [
           {
-            name: REBASE_LABEL,
+            name: defaultConfig.keepUpdatedLabel,
           },
         ],
       },

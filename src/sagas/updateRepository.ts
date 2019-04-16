@@ -36,8 +36,16 @@ import {
 } from '../entities/eventPayloads';
 
 import {
+  Config,
+} from '../entities/config';
+
+import {
   updatePullSaga,
-} from '../sagas/updatePull';
+} from './updatePull';
+
+import {
+  readRepoConfigSaga,
+} from './readConfig';
 
 export const REBASE_LABEL = 'keep-rebased';
 
@@ -75,6 +83,12 @@ export function* updateRepositorySaga(
 
   const defaultRepositoryBranch = defaultBranch(context);
 
+  const config: Config = yield call(
+    readRepoConfigSaga,
+    app,
+    context,
+  );
+
   let response: Response<PullsListResponseItem[]>;
 
   try {
@@ -96,8 +110,10 @@ export function* updateRepositorySaga(
 
   const pulls = response.data;
 
+  app.log(`Filtering pull request by label ${config.keepUpdatedLabel} for ${fullName}`);
+
   const pullsToUpdate = filter(
-    hasLabel(REBASE_LABEL), // TODO get config
+    hasLabel(config.keepUpdatedLabel),
     pulls,
   );
 
