@@ -53,10 +53,20 @@ const getRepoCloneUrl = (
 ) => `https://x-access-token:${token}@github.com/${owner}/${repo}.git`;
 
 function* handleError(
+  app: Application,
   context: Context<WebhookPayloadPushAuthenticated>,
   pull: PullsListResponseItem,
   error: RebaseError | Error,
 ): SagaIterator {
+  const  {
+    number: pullNumber,
+    base: {
+      repo: {
+        full_name: fullName,
+      },
+    },
+  } = pull;
+
   const type = isRebaseError(error)
     ? error.type
     : 'UNKNOWN_ERROR';
@@ -66,32 +76,48 @@ function* handleError(
     body: message,
   });
 
-  params.number = pull.number;
+  params.number = pullNumber;
 
-  // TODO handle error in this call
-  yield call(
-    context.github.issues.createComment,
-    params,
-  );
+  try {
+    yield call(
+      context.github.issues.createComment,
+      params,
+    );
+  } catch (error) {
+    app.log(`Can't create comment for ${fullName} ${pull.number}`);
+  }
 }
 
 function* handleSuccess(
+  app: Application,
   context: Context<WebhookPayloadPushAuthenticated>,
   pull: PullsListResponseItem,
   baseBranch: string,
 ): SagaIterator {
+  const  {
+    number: pullNumber,
+    base: {
+      repo: {
+        full_name: fullName,
+      },
+    },
+  } = pull;
+
   const message = `Pull request rebased on ${baseBranch}`;
   const params = context.issue({
     body: message,
   });
 
-  params.number = pull.number;
+  params.number = pullNumber;
 
-  // TODO handle error in this call
-  yield call(
-    context.github.issues.createComment,
-    params,
-  );
+  try {
+    yield call(
+      context.github.issues.createComment,
+      params,
+    );
+  } catch (error) {
+    app.log(`Can't create comment for ${fullName} ${pull.number}`);
+  }
 }
 
 export function* updatePullSaga(
@@ -135,6 +161,7 @@ export function* updatePullSaga(
 
     yield call(
       handleSuccess,
+      app,
       context,
       pull,
       baseBranch,
@@ -148,6 +175,7 @@ export function* updatePullSaga(
 
     yield call(
       handleError,
+      app,
       context,
       pull,
       error,

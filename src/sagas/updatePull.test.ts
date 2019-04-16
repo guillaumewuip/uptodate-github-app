@@ -122,6 +122,7 @@ describe('sagas/updatePull', () => {
 
   beforeEach(() => {
     (context.github.issues.createComment as unknown as jest.Mock).mockReset();
+    (app.log as unknown as jest.Mock).mockReset();
     jest.resetModules();
   });
 
@@ -183,6 +184,26 @@ describe('sagas/updatePull', () => {
     });
   });
 
+  it('handle createComment error', async () => {
+    type CreateComment = typeof context.github.issues.createComment;
+    context.github.issues.createComment =
+      jest.fn().mockRejectedValue(new Error('')) as unknown as CreateComment;
+
+    await expectSaga(
+      updatePullSaga,
+      app,
+      context,
+      token,
+      pull,
+    )
+      .run(false);
+
+    const log = app.log as unknown as jest.Mock;
+    expect(log).toHaveBeenLastCalledWith(
+      `Can't create comment for ${pull.base.repo.full_name} ${pull.number}`,
+    );
+  });
+
   it('remove tmp dir after update', async () => {
     await expectSaga(
       updatePullSaga,
@@ -223,27 +244,51 @@ describe('sagas/updatePull', () => {
     );
   });
 
-  it.each(errors)(
-    'should handle %s error correctly',
-    async (_: string, error: Error, errorMessage: string) => {
-      await expectSaga(
-        updatePullSaga,
-        app,
-        context,
-        token,
-        pull,
-      )
-        .provide([
-          [callMatcher.fn(cloneRebaseAndPush), throwError(error)],
-        ])
-        .run(false);
+  describe.each(errors)(
+    '%s', (_: string, error: Error, errorMessage: string) => {
+      it('should send comment', async () => {
+        await expectSaga(
+          updatePullSaga,
+          app,
+          context,
+          token,
+          pull,
+        )
+          .provide([
+            [callMatcher.fn(cloneRebaseAndPush), throwError(error)],
+          ])
+          .run(false);
 
-      const createComment = context.github.issues.createComment as unknown as jest.Mock;
-      expect(createComment).toHaveBeenCalledWith({
-        owner,
-        repo,
-        number: pull.number,
-        body: errorMessage,
+        const createComment = context.github.issues.createComment as unknown as jest.Mock;
+        expect(createComment).toHaveBeenCalledWith({
+          owner,
+          repo,
+          number: pull.number,
+          body: errorMessage,
+        });
+      });
+
+      it('should handle createComment error', async () => {
+        type CreateComment = typeof context.github.issues.createComment;
+        context.github.issues.createComment =
+          jest.fn().mockRejectedValue(new Error('')) as unknown as CreateComment;
+
+        await expectSaga(
+          updatePullSaga,
+          app,
+          context,
+          token,
+          pull,
+        )
+          .provide([
+            [callMatcher.fn(cloneRebaseAndPush), throwError(error)],
+          ])
+          .run(false);
+
+        const log = app.log as unknown as jest.Mock;
+        expect(log).toHaveBeenLastCalledWith(
+          `Can't create comment for ${pull.base.repo.full_name} ${pull.number}`,
+        );
       });
     },
   );
