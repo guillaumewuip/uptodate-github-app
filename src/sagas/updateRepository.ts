@@ -19,10 +19,6 @@ import {
 } from 'ramda';
 
 import {
-  Context,
-} from 'probot';
-
-import {
   Application,
 } from '../entities/Application';
 
@@ -31,8 +27,12 @@ import {
 } from '../entities/PullsListResponseItem';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPushAuthenticated,
   defaultBranch,
+  getInstallationId,
+  getRepositoryFullName,
+  getRepositoryName,
+  getRepositoryOwnerLogin,
 } from '../entities/eventPayloads';
 
 import {
@@ -51,15 +51,9 @@ export const REBASE_LABEL = 'keep-rebased';
 
 function* getRepositoryAccessToken(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
 ): SagaIterator {
-  const {
-    payload: {
-      installation: {
-        id,
-      },
-    },
-  } = context;
+  const id = getInstallationId(context);
 
   const token = yield call(
     app.app.getInstallationAccessToken,
@@ -73,13 +67,11 @@ function* getRepositoryAccessToken(
 
 export function* updateRepositorySaga(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
 ): SagaIterator {
-  const {
-    owner,
-    name,
-    full_name: fullName,
-  } = context.payload.repository;
+  const ownerLogin = getRepositoryOwnerLogin(context);
+  const name = getRepositoryName(context);
+  const fullName = getRepositoryFullName(context);
 
   const defaultRepositoryBranch = defaultBranch(context);
 
@@ -95,7 +87,7 @@ export function* updateRepositorySaga(
     response = yield call(
       context.github.pulls.list,
       {
-        owner: owner.login,
+        owner: ownerLogin,
         repo: name,
         base: defaultRepositoryBranch,
       },

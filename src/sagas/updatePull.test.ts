@@ -15,10 +15,6 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  Context,
-} from 'probot';
-
-import {
   PullsListResponseItem,
 } from '@octokit/rest';
 
@@ -37,7 +33,8 @@ import {
 } from '../entities/Application';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPushAuthenticated,
+  getRepositoryFullName,
 } from '../entities/eventPayloads';
 
 import {
@@ -45,8 +42,7 @@ import {
   updatePullSaga,
 } from './updatePull';
 
-type WebhookPayloadPushContext = Context<WebhookPayloadPushAuthenticated>;
-type GithubCreateComment = Context['github']['issues']['createComment'];
+type GithubCreateComment = ContextPayloadPushAuthenticated['github']['issues']['createComment'];
 
 const tmpDir = '/tmp/dir';
 const token = '13423443';
@@ -111,7 +107,7 @@ describe('sagas/updatePull', () => {
     log: jest.fn(),
   } as unknown as Application;
 
-  const mockedContext: RecursivePartial<WebhookPayloadPushContext> = {
+  const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
     issue: ({ body }: { body: string }) => ({
       body,
       owner,
@@ -124,12 +120,16 @@ describe('sagas/updatePull', () => {
     },
     payload: {
       repository: {
+        owner: {
+          login: owner,
+        },
+        name: repo,
         full_name: `${owner}/${repo}`,
       },
     },
   };
 
-  const context = mockedContext as unknown as WebhookPayloadPushContext;
+  const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
   beforeEach(() => {
     (context.github.issues.createComment as unknown as jest.Mock).mockReset();
@@ -141,13 +141,6 @@ describe('sagas/updatePull', () => {
     number: 1,
     base: {
       ref: 'test-pr',
-      repo: {
-        owner: {
-          login: owner,
-        },
-        name: repo,
-        full_name: `${owner}/${repo}`,
-      },
     },
     head: {
       ref: 'master',
@@ -211,7 +204,7 @@ describe('sagas/updatePull', () => {
 
     const log = app.log as unknown as jest.Mock;
     expect(log).toHaveBeenLastCalledWith(
-      `Can't create comment for ${pull.base.repo.full_name} ${pull.number}`,
+      `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
     );
   });
 
@@ -298,7 +291,7 @@ describe('sagas/updatePull', () => {
 
         const log = app.log as unknown as jest.Mock;
         expect(log).toHaveBeenLastCalledWith(
-          `Can't create comment for ${pull.base.repo.full_name} ${pull.number}`,
+          `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
         );
       });
     },

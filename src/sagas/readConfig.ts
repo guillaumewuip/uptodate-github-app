@@ -7,15 +7,12 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  Context,
-} from 'probot';
-
-import {
   Application,
 } from '../entities/Application';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPushAuthenticated,
+  getRepositoryFullName,
 } from '../entities/eventPayloads';
 
 import {
@@ -26,7 +23,7 @@ import {
 
 export function* readRepoConfigSaga(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
 ):SagaIterator {
   try {
     const config: Config = yield call(
@@ -37,13 +34,7 @@ export function* readRepoConfigSaga(
 
     return config;
   } catch (error) {
-    const {
-      payload: {
-        repository: {
-          full_name: fullName,
-        },
-      },
-    } = context;
+    const fullName = getRepositoryFullName(context);
 
     app.log(`Can't get config for ${fullName}`);
 

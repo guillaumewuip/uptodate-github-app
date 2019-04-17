@@ -12,7 +12,6 @@ import {
 
 import {
   Application,
-  Context,
 } from 'probot';
 
 import {
@@ -24,7 +23,7 @@ import {
 } from '@octokit/rest';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPushAuthenticated,
 } from '../entities/eventPayloads';
 
 import {
@@ -44,10 +43,9 @@ import {
   updateRepositorySaga,
 } from './updateRepository';
 
-type WebhookPayloadPushContext = Context<WebhookPayloadPushAuthenticated>;
-type OctokitPullsList = WebhookPayloadPushContext['github']['pulls']['list'];
+type OctokitPullsList = ContextPayloadPushAuthenticated['github']['pulls']['list'];
 type OctokitFindRepoInstallation =
-  WebhookPayloadPushContext['github']['apps']['findRepoInstallation'];
+  ContextPayloadPushAuthenticated['github']['apps']['findRepoInstallation'];
 
 type OctokitGetInstallationToken = Application['app']['getInstallationAccessToken'];
 
@@ -103,7 +101,7 @@ describe('sagas/updateRepository', () => {
       },
     });
 
-    const context: RecursivePartial<WebhookPayloadPushContext> = {
+    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
       payload: {
         repository: {
           owner: {
@@ -133,7 +131,7 @@ describe('sagas/updateRepository', () => {
     } = await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as Context,
+      context as unknown as ContextPayloadPushAuthenticated,
     )
       .run(false);
 
@@ -181,7 +179,7 @@ describe('sagas/updateRepository', () => {
       keepUpdatedLabel: label,
     };
 
-    const context: RecursivePartial<WebhookPayloadPushContext> = {
+    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
       config: jest.fn().mockResolvedValue(config),
       payload: {
         repository: {
@@ -212,7 +210,7 @@ describe('sagas/updateRepository', () => {
     } = await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as Context,
+      context as unknown as ContextPayloadPushAuthenticated,
     )
       .run(false);
 
@@ -227,7 +225,7 @@ describe('sagas/updateRepository', () => {
   it('should handle fetch PRs error', async () => {
     const listPulls = jest.fn().mockRejectedValue(new Error());
 
-    const context: RecursivePartial<WebhookPayloadPushContext> = {
+    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
       payload: {
         repository: {
           owner: {
@@ -250,7 +248,7 @@ describe('sagas/updateRepository', () => {
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as Context,
+      context as unknown as ContextPayloadPushAuthenticated,
     )
       .run(false);
 
@@ -277,7 +275,7 @@ describe('sagas/updateRepository', () => {
       data,
     });
 
-    const context: RecursivePartial<WebhookPayloadPushContext> = {
+    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
       payload: {
         repository: {
           owner: {
@@ -300,7 +298,7 @@ describe('sagas/updateRepository', () => {
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as Context,
+      context as unknown as ContextPayloadPushAuthenticated,
     )
       .provide([
         [callMatcher.fn(updatePullSaga), throwError(new Error())],
@@ -334,7 +332,7 @@ describe('sagas/updateRepository', () => {
       data,
     });
 
-    const context: RecursivePartial<WebhookPayloadPushContext> = {
+    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
       payload: {
         repository: {
           owner: {
@@ -360,7 +358,7 @@ describe('sagas/updateRepository', () => {
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as Context,
+      context as unknown as ContextPayloadPushAuthenticated,
     )
       .provide([
         [callMatcher.fn(updatePullSaga), throwError(new Error())],

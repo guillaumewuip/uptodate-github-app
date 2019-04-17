@@ -1,17 +1,9 @@
 import {
-  Context,
-} from 'probot';
-
-import {
-  WebhookPayloadPush,
-} from '@octokit/webhooks';
-
-import {
   Application,
 } from './entities/Application';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPush,
   isAuthenticated,
   isDefaultBranchUpdated,
 } from './entities/eventPayloads';
@@ -21,19 +13,18 @@ import {
 } from './actions/updateRepository';
 
 export = (app: Application) => {
-  app.on('push', async (context: Context<WebhookPayloadPush>) => {
-    if (!isDefaultBranchUpdated(context)) {
-      return;
-    }
-
+  app.on('push', async (context: ContextPayloadPush) => {
     if (!isAuthenticated(context)) {
       app.log('Received non-authenticated payload');
 
       return;
     }
 
+    if (!isDefaultBranchUpdated(context)) {
+      return;
+    }
+
     const action = repositoryUpdated(
-      context.payload.repository,
       context,
     );
     app.store.dispatch(action);

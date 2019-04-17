@@ -20,7 +20,7 @@ import {
 
 import {
   getRepositoryIdentifier,
-} from '../entities/PayloadRepository';
+} from '../entities/eventPayloads';
 
 import {
   updateRepositorySaga,
@@ -37,12 +37,9 @@ export function* handleRepositoryUpdate(
 ): SagaIterator {
   const {
     context,
-    payload: {
-      repository,
-    },
   } = action;
 
-  const repositoryIdentifier = getRepositoryIdentifier(repository);
+  const repositoryIdentifier = getRepositoryIdentifier(context);
   app.log(`Received ${repositoryIdentifier} update`);
 
   const repositoryTask = repositoriesUpdateTasks[repositoryIdentifier];

@@ -11,20 +11,23 @@ import {
   equals,
 } from 'ramda';
 
-export type WebhookPayloadPushAuthenticated = WebhookPayloadPush & {
+type WebhookPayloadPushAuthenticated = WebhookPayloadPush & {
   installation: {
     id: number,
     node_id: string,
   },
 };
 
+export type ContextPayloadPush = Context<WebhookPayloadPush>;
+export type ContextPayloadPushAuthenticated = Context<WebhookPayloadPushAuthenticated>;
+
 export const isAuthenticated = (
-  context: Context<WebhookPayloadPush>,
-): context is Context<WebhookPayloadPushAuthenticated> =>
+  context: ContextPayloadPush,
+): context is ContextPayloadPushAuthenticated =>
   // @ts-ignore
   context.payload.installation !== undefined;
 
-const branchUpdated = (context: Context<WebhookPayloadPush>): string => {
+const branchUpdated = (context: ContextPayloadPushAuthenticated): string => {
   const ref = context.payload.ref;
   const parts = ref.split('/');
 
@@ -33,11 +36,35 @@ const branchUpdated = (context: Context<WebhookPayloadPush>): string => {
   return branch;
 };
 
-export const defaultBranch = (context: Context<WebhookPayloadPush>): string =>
+export const defaultBranch = (context: ContextPayloadPushAuthenticated): string =>
   context.payload.repository.default_branch;
 
-export const isDefaultBranchUpdated = (context: Context<WebhookPayloadPush>): boolean => {
+export const isDefaultBranchUpdated = (context: ContextPayloadPushAuthenticated): boolean => {
   const branch = branchUpdated(context);
 
   return equals(branch, defaultBranch(context));
+};
+
+export const getRepositoryId = (context: ContextPayloadPushAuthenticated) => {
+  return context.payload.repository.id;
+};
+
+export const getRepositoryFullName = (context: ContextPayloadPushAuthenticated) => {
+  return context.payload.repository.full_name;
+};
+
+export const getRepositoryName = (context: ContextPayloadPushAuthenticated) => {
+  return context.payload.repository.name;
+};
+
+export const getRepositoryOwnerLogin = (context: ContextPayloadPushAuthenticated) => {
+  return context.payload.repository.owner.login;
+};
+
+export const getRepositoryIdentifier = (context: ContextPayloadPushAuthenticated) => {
+  return `${getRepositoryId(context)}-${getRepositoryFullName(context)}`;
+};
+
+export const getInstallationId = (context: ContextPayloadPushAuthenticated) => {
+  return context.payload.installation.id;
 };

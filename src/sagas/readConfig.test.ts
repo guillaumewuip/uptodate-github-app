@@ -11,7 +11,7 @@ import {
 } from '../entities/Application';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  ContextPayloadPushAuthenticated,
 } from '../entities/eventPayloads';
 
 import {
@@ -26,8 +26,6 @@ import {
   readRepoConfigSaga,
 } from './readConfig';
 
-type WebhookPayloadPushContext = Context<WebhookPayloadPushAuthenticated>;
-
 describe('sagas/readRepoConfig', () => {
   it('should return the repo config', async () => {
     const app = {
@@ -38,10 +36,11 @@ describe('sagas/readRepoConfig', () => {
       test: 'test',
     };
 
-    const mockedContext: RecursivePartial<WebhookPayloadPushContext> = {
-      config: jest.fn().mockResolvedValue(config) as unknown as WebhookPayloadPushContext['config'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      config: jest.fn()
+        .mockResolvedValue(config) as unknown as ContextPayloadPushAuthenticated['config'],
     };
-    const context = mockedContext as unknown as Context<WebhookPayloadPushAuthenticated>;
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
     await expectSaga(
       readRepoConfigSaga,
@@ -57,16 +56,16 @@ describe('sagas/readRepoConfig', () => {
       log: jest.fn(),
     } as unknown as Application;
 
-    const mockedContext: RecursivePartial<WebhookPayloadPushContext> = {
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
       payload: {
         repository: {
           full_name: 'owner/repo',
         },
       },
       config: jest.fn()
-        .mockRejectedValue(new Error('')) as unknown as WebhookPayloadPushContext['config'],
+        .mockRejectedValue(new Error('')) as unknown as ContextPayloadPushAuthenticated['config'],
     };
-    const context = mockedContext as unknown as Context<WebhookPayloadPushAuthenticated>;
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
     await expectSaga(
       readRepoConfigSaga,

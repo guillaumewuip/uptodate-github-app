@@ -4,12 +4,7 @@ import{
 
 import {
   Application,
-  Context,
 } from 'probot';
-
-import {
-  PayloadRepository,
-} from '@octokit/webhooks';
 
 import {
   REPOSITORY_UPDATED,
@@ -17,8 +12,9 @@ import {
 } from '../actions/updateRepository';
 
 import {
+  ContextPayloadPushAuthenticated,
   getRepositoryIdentifier,
-} from '../entities/PayloadRepository';
+} from '../entities/eventPayloads';
 
 import {
   testSaga,
@@ -38,27 +34,30 @@ describe('sagas/updateRepositories', () => {
     log: jest.fn(),
   } as unknown as Application;
 
-  const context = {
+  const context1 = {
+    payload: {
+      repository: {
+        id: '1',
+        full_name: 'repository1',
+      },
+    },
+  } as unknown as ContextPayloadPushAuthenticated;
 
-  } as unknown as Context;
-
-  const repository1 = {
-    id: '1',
-    full_name: 'repository1',
-  } as unknown as PayloadRepository;
-
-  const repository2 = {
-    id: '2',
-    full_name: 'repository2',
-  } as unknown as PayloadRepository;
+  const context2 = {
+    payload: {
+      repository: {
+        id: '2',
+        full_name: 'repository2',
+      },
+    },
+  } as unknown as ContextPayloadPushAuthenticated;
 
   const repository1UpdatedAction = repositoryUpdated(
-    repository1,
-    context,
+    context1,
   );
 
-  const repository1Id = getRepositoryIdentifier(repository1);
-  const repository2Id = getRepositoryIdentifier(repository2);
+  const repository1Id = getRepositoryIdentifier(context1);
+  const repository2Id = getRepositoryIdentifier(context2);
 
   describe('updateRepositoriesSaga', () => {
     it('should takeEvery REPOSITORY_UPDATED with handleRepositoryUpdate', async () => {
@@ -94,7 +93,7 @@ describe('sagas/updateRepositories', () => {
         .fork(
           updateRepositorySaga,
           app,
-          context,
+          context1,
         )
 
         .next(repository1Task)
@@ -127,7 +126,7 @@ describe('sagas/updateRepositories', () => {
         .fork(
           updateRepositorySaga,
           app,
-          context,
+          context1,
         )
 
         .next(repository1Task2)

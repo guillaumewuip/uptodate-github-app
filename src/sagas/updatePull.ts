@@ -11,10 +11,6 @@ import {
 } from '@octokit/rest';
 
 import {
-  Context,
-} from 'probot';
-
-import {
   DirResult,
   dirSync,
 } from 'tmp';
@@ -24,7 +20,16 @@ import {
 } from '../entities/Application';
 
 import {
-  WebhookPayloadPushAuthenticated,
+  getPullNumber,
+  getPullBaseBranch,
+  getPullBranch,
+} from '../entities/PullsListResponseItem';
+
+import {
+  ContextPayloadPushAuthenticated,
+  getRepositoryFullName,
+  getRepositoryOwnerLogin,
+  getRepositoryName,
 } from '../entities/eventPayloads';
 
 import {
@@ -56,7 +61,7 @@ const getRepoCloneUrl = (
 
 function* sendComment(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
   params: {
     owner: string,
     repo: string,
@@ -64,13 +69,7 @@ function* sendComment(
     body: string,
   },
 ): SagaIterator {
-  const  {
-    payload: {
-      repository: {
-        full_name: fullName,
-      },
-    },
-  } = context;
+  const fullName = getRepositoryFullName(context);
 
   try {
     yield call(
@@ -84,13 +83,11 @@ function* sendComment(
 
 function* handleError(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
   pull: PullsListResponseItem,
   error: GitError | Error,
 ): SagaIterator {
-  const {
-    number: pullNumber,
-  } = pull;
+  const pullNumber = getPullNumber(pull);
 
   if (!isGitError(error)) {
     const params = context.issue({
@@ -127,7 +124,7 @@ function* handleError(
   }
 
   const filesList = error.files
-    .map(filePath => `\n- ${filePath}`)
+    .map(filePath => `\n- ${filePath}`);
 
   const message = `${errorMessages.REBASE_ERROR}${filesList}`;
 
@@ -147,18 +144,12 @@ function* handleError(
 
 function* handleSuccess(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
   pull: PullsListResponseItem,
   baseBranch: string,
 ): SagaIterator {
-  const  {
-    number: pullNumber,
-    base: {
-      repo: {
-        full_name: fullName,
-      },
-    },
-  } = pull;
+  const fullName = getRepositoryFullName(context);
+  const pullNumber = getPullNumber(pull);
 
   const message = `Pull request rebased on ${baseBranch}`;
   const params = context.issue({
@@ -181,30 +172,22 @@ function* handleSuccess(
 
 export function* updatePullSaga(
   app: Application,
-  context: Context<WebhookPayloadPushAuthenticated>,
+  context: ContextPayloadPushAuthenticated,
   token: string,
   pull: PullsListResponseItem,
 ): SagaIterator {
   let tmpDir: DirResult | undefined;
 
-  const {
-    base: {
-      ref: baseBranch,
-      repo: {
-        owner,
-        name,
-        full_name: fullName,
-      },
-    },
-    head: {
-      ref: branch,
-    },
-  } = pull;
+  const fullName = getRepositoryFullName(context);
+  const ownerLogin = getRepositoryOwnerLogin(context);
+  const name = getRepositoryName(context);
+  const baseBranch = getPullBaseBranch(pull);
+  const branch = getPullBranch(pull);
 
   try {
     app.log(`Updating ${fullName}/${branch}`);
 
-    const repoCloneUrl = getRepoCloneUrl(token, owner.login, name);
+    const repoCloneUrl = getRepoCloneUrl(token, ownerLogin, name);
 
     tmpDir = dirSync();
 

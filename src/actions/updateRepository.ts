@@ -1,28 +1,17 @@
 import {
-  PayloadRepository,
-} from '@octokit/webhooks';
-
-import {
-  Context,
-} from 'probot';
+  ContextPayloadPushAuthenticated,
+} from '../entities/eventPayloads';
 
 export const REPOSITORY_UPDATED = 'REPOSITORY_UPDATED';
 
 export type RepositoryUpdatedAction = {
   type: typeof REPOSITORY_UPDATED,
-  context: Context,
-  payload: {
-    repository: PayloadRepository,
-  },
+  context: ContextPayloadPushAuthenticated,
 };
 
 export const repositoryUpdated = (
-  repository: PayloadRepository,
-  context: Context,
+  context: ContextPayloadPushAuthenticated,
 ): RepositoryUpdatedAction => ({
   context,
   type: 'REPOSITORY_UPDATED',
-  payload: {
-    repository,
-  },
 });
