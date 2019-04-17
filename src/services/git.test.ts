@@ -114,6 +114,66 @@ describe('services/git', () => {
     });
 
     it('should handle rebase error', async () => {
+      const mockedRebaseError = {
+        hasConflicts: () => true,
+      };
+
+      const mockedRemote = {
+        connect: jest.fn().mockResolvedValue(undefined),
+        connected: jest.fn().mockReturnValue(true),
+        push: jest.fn().mockResolvedValue(undefined),
+      };
+
+      const mockedOid = {
+        equal: jest.fn().mockReturnValue(true),
+      };
+
+      const mockedReference = {
+        target: jest.fn().mockReturnValue(mockedOid),
+      };
+
+      const mockedRepo = {
+        rebaseBranches: jest.fn().mockRejectedValue(mockedRebaseError),
+        defaultSignature: jest.fn().mockReturnValue(mockedSignature),
+        getRemote: jest.fn().mockResolvedValue(mockedRemote),
+        getStatus: jest.fn().mockResolvedValue([]),
+      };
+
+      jest.resetModules();
+      jest.mock('nodegit', () => ({
+        Clone: {
+          clone: jest.fn().mockImplementation(() => Promise.resolve(mockedRepo)),
+        },
+        Reference: {
+          lookup: jest.fn().mockImplementation(() => Promise.resolve(mockedReference)),
+        },
+      }));
+
+      const {
+        cloneRebaseAndPush,
+      } = require('./git');
+
+      const url = 'https://github.com/guillaumewuip/test-github-app';
+      const dir = '/tmp/guillaumewuip-test';
+      const baseBranch = 'master';
+      const branch = 'test-pr1';
+
+      expect.assertions(2);
+
+      try {
+        await cloneRebaseAndPush(
+          url,
+          dir,
+          branch,
+          baseBranch,
+        );
+      } catch (error) {
+        expect(error.type).toEqual('REBASE_ERROR');
+        expect(error.files).toEqual([]);
+      }
+    });
+
+    it('should handle unknown rebase error', async () => {
       const mockedRebaseError = new Error('');
 
       const mockedRemote = {
@@ -134,6 +194,7 @@ describe('services/git', () => {
         rebaseBranches: jest.fn().mockRejectedValue(mockedRebaseError),
         defaultSignature: jest.fn().mockReturnValue(mockedSignature),
         getRemote: jest.fn().mockResolvedValue(mockedRemote),
+        getStatus: jest.fn().mockResolvedValue([]),
       };
 
       jest.resetModules();
@@ -165,7 +226,7 @@ describe('services/git', () => {
           baseBranch,
         );
       } catch (error) {
-        expect(error.type).toEqual('REBASE_ERROR');
+        expect(error.type).toEqual('UNKNOWN_REBASE_ERROR');
       }
     });
 

@@ -65,16 +65,20 @@ jest.mock('tmp', () => {
 });
 
 jest.mock('../services/git', () => ({
-  isRebaseError: (error: Error) => {
+  isGitError: (error: Error) => {
     // @ts-ignore
     return error.type !== undefined;
+  },
+  isRebaseError: (error: Error) => {
+    // @ts-ignore
+    return error.type === 'REBASE_ERROR';
   },
   cloneRebaseAndPush: jest.fn(),
 }));
 
 import {
   cloneRebaseAndPush,
-  RebaseError,
+  GitError,
   ERROR_TYPE,
 } from '../services/git';
 
@@ -85,8 +89,10 @@ import {
 const errors = compose<typeof errorMessages, [string, string][], [string, Error, string][]>(
   map(
     ([errorName, errorMessage]) => {
-      const error = new Error(errorName) as RebaseError;
+      const error = new Error(errorName) as GitError;
       error.type = errorName as ERROR_TYPE;
+      // @ts-ignore
+      error.files = [];
 
       return [
         errorName,
@@ -114,6 +120,11 @@ describe('sagas/updatePull', () => {
     github: {
       issues: {
         createComment: jest.fn() as unknown as GithubCreateComment,
+      },
+    },
+    payload: {
+      repository: {
+        full_name: `${owner}/${repo}`,
       },
     },
   };

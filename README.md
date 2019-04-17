@@ -9,7 +9,7 @@
 ## Roadmap
 
 - [x] keep PR rebased on base branch 
-- [ ] better error message (with conflict ?) for rebase
+- [x] better error message (with conflict ?) for rebase
 - [x] use config file for rebase flag name
 - [x] force-with-lease instead of force
 - [ ] refacto logs

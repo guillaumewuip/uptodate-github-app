@@ -3,15 +3,28 @@ import Git from 'nodegit';
 export type ERROR_TYPE =
   'CLONE_ERROR' |
   'REBASE_ERROR' |
+  'UNKNOWN_REBASE_ERROR' |
   'PUSH_ERROR' |
   'LEASE_ERROR';
 
-export type RebaseError = Error & {
+export type GitError = Error & {
   type: ERROR_TYPE,
 };
 
-export const isRebaseError = (error: any): error is RebaseError => {
+export type RebaseError = GitError & {
+  files: string[],
+};
+
+export const isGitError = (error: any): error is GitError => {
   return error.type !== undefined;
+};
+
+export const isRebaseError = (error: GitError): error is RebaseError => {
+  return error.type === 'REBASE_ERROR';
+};
+
+export const isIndex = (error: any): error is Git.Index => {
+  return error.hasConflicts !== undefined;
 };
 
 const clone = async (
@@ -52,8 +65,24 @@ const rebase = async (
       signature,
       async () => {}, // fix for bad function type
     );
-  } catch (error) {
+  } catch (errorOrIndex) {
+    if (!isIndex(errorOrIndex)) {
+      const error = errorOrIndex;
+
+      error.type = 'UNKNOWN_REBASE_ERROR';
+
+      throw error;
+    }
+
+    const statuses = await repo.getStatus();
+
+    const conflictFiles = statuses
+      .filter(statusFile => statusFile.isConflicted())
+      .map(statusFile => statusFile.path());
+
+    const error = new Error() as RebaseError;
     error.type = 'REBASE_ERROR';
+    error.files = conflictFiles;
 
     throw error;
   }
@@ -173,7 +202,7 @@ export const cloneRebaseAndPush = async (
 
   if (!isBaseBranchUpToDate) {
     // something as been pushed on the remote branch during rebase
-    const error = new Error('Remote has changed') as RebaseError;
+    const error = new Error('Remote has changed') as GitError;
     error.type = 'LEASE_ERROR';
 
     throw error;
