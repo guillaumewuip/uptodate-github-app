@@ -3,11 +3,8 @@ import {
 } from 'redux-saga-test-plan';
 
 import {
-  Context,
-} from 'probot';
-
-import {
   ContextPayloadPushAuthenticated,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -29,9 +26,22 @@ describe('sagas/readRepoConfig', () => {
     };
 
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+      log: {
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       config: jest.fn()
         .mockResolvedValue(config) as unknown as ContextPayloadPushAuthenticated['config'],
+      payload: {
+        repository: {
+          owner: {
+            login: 'guillaumewuip',
+          },
+          name: 'test',
+        },
+        installation: {
+          id: 1,
+        },
+      },
     };
     const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
@@ -44,15 +54,24 @@ describe('sagas/readRepoConfig', () => {
   });
 
   it('should return the default config and log if error', async () => {
+    const readConfigError = new Error('');
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+      log: {
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
-          full_name: 'owner/repo',
+          owner: {
+            login: 'guillaumewuip',
+          },
+          name: 'test',
+        },
+        installation: {
+          id: 1,
         },
       },
       config: jest.fn()
-        .mockRejectedValue(new Error('')) as unknown as ContextPayloadPushAuthenticated['config'],
+        .mockRejectedValue(readConfigError) as unknown as ContextPayloadPushAuthenticated['config'],
     };
     const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
@@ -63,8 +82,12 @@ describe('sagas/readRepoConfig', () => {
       .returns(defaultConfig)
       .run(false);
 
-    expect(context.log).toHaveBeenCalledWith(
-      `Can't get config for ${context.payload.repository.full_name}`,
+    expect(context.log.error).toHaveBeenCalledWith(
+      {
+        ...getLogInfo(context),
+        err: readConfigError,
+      },
+      'Can\'t get config',
     );
   });
 });

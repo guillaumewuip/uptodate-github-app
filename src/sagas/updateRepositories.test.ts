@@ -30,26 +30,40 @@ import {
 } from './updateRepositories';
 
 describe('sagas/updateRepositories', () => {
-  const app = {
-    log: jest.fn(),
-  } as unknown as Application;
+  const app = {} as unknown as Application;
 
   const context1 = {
-    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    log: {
+      info: jest.fn(),
+    } as unknown as ContextPayloadPushAuthenticated['log'],
     payload: {
       repository: {
         id: '1',
-        full_name: 'repository1',
+        owner: {
+          login: 'guillaumewuip',
+        },
+        name: 'test',
+      },
+      installation: {
+        id: 1,
       },
     },
   } as unknown as ContextPayloadPushAuthenticated;
 
   const context2 = {
-    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    log: {
+      info: jest.fn(),
+    } as unknown as ContextPayloadPushAuthenticated['log'],
     payload: {
       repository: {
         id: '2',
-        full_name: 'repository2',
+        owner: {
+          login: 'guillaumewuip',
+        },
+        name: 'test2',
+      },
+      installation: {
+        id: 1,
       },
     },
   } as unknown as ContextPayloadPushAuthenticated;

@@ -15,7 +15,7 @@ import {
 export = (app: Application) => {
   app.on('push', async (context: ContextPayloadPush) => {
     if (!isAuthenticated(context)) {
-      app.log('Received non-authenticated payload');
+      app.log.info('Received non-authenticated payload');
 
       return;
     }

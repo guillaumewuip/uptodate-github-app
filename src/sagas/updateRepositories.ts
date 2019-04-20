@@ -20,6 +20,7 @@ import {
 
 import {
   getRepositoryIdentifier,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -40,13 +41,19 @@ export function* handleRepositoryUpdate(
   } = action;
 
   const repositoryIdentifier = getRepositoryIdentifier(context);
-  context.log(`Received ${repositoryIdentifier} update`);
+  context.log.info(
+    getLogInfo(context),
+    'Received repository update',
+  );
 
   const repositoryTask = repositoriesUpdateTasks[repositoryIdentifier];
 
   if (repositoryTask) {
     if (repositoryTask.isRunning()) {
-      context.log(`Cancelling ${repositoryIdentifier} running update task`);
+      context.log.info(
+        getLogInfo(context),
+        'Cancelling running update task',
+      );
     }
 
     yield cancel(repositoryTask);

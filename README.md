@@ -12,7 +12,7 @@
 - [x] better error message (with conflict ?) for rebase
 - [x] use config file for rebase flag name
 - [x] force-with-lease instead of force
-- [ ] refacto logs
+- [x] refacto logs
 - [ ] write README
 - [ ] merge PR once rebased if flag
 - [ ] add merge update method via config

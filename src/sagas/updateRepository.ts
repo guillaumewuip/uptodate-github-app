@@ -33,6 +33,7 @@ import {
   getRepositoryFullName,
   getRepositoryName,
   getRepositoryOwnerLogin,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -92,16 +93,31 @@ export function* updateRepositorySaga(
       },
     );
 
-    context.log(`Pull requests fetched for ${fullName}`);
+    context.log.info(
+      getLogInfo(context),
+      'Pull requests fetched',
+    );
   } catch (error) {
-    context.log(`Can't fetch pull requests for ${fullName}`);
+    context.log.error(
+      {
+        ...getLogInfo(context),
+        err: error,
+      },
+      'Can\'t fetch pull requests',
+    );
 
     return;
   }
 
   const pulls = response.data;
 
-  context.log(`Filtering pull request by label ${config.keepUpdatedLabel} for ${fullName}`);
+  context.log.info(
+    {
+      ...getLogInfo(context),
+      label: config.keepUpdatedLabel,
+    },
+    'Filtering pull request by label',
+  );
 
   const pullsToUpdate = filter(
     hasLabel(config.keepUpdatedLabel),
@@ -109,7 +125,10 @@ export function* updateRepositorySaga(
   );
 
   if (isEmpty(pullsToUpdate)) {
-    context.log(`No pull requests to update for ${fullName}`);
+    context.log.info(
+      getLogInfo(context),
+      `No pull requests to update for ${fullName}`,
+    );
 
     return;
   }
@@ -123,7 +142,13 @@ export function* updateRepositorySaga(
       context,
     );
   } catch (error) {
-    context.log(`Can't get repositoryToken for ${fullName}`);
+    context.log.error(
+      {
+        ...getLogInfo(context),
+        err: error,
+      },
+      'Can\'t get repositoryToken',
+    );
 
     return;
   }
@@ -141,6 +166,12 @@ export function* updateRepositorySaga(
   try {
     yield all(pullsUpdates);
   } catch (error) {
-    context.log(`Unknown error updating pull requests for ${fullName}`);
+    context.log.error(
+      {
+        ...getLogInfo(context),
+        err: error,
+      },
+      'Unknown error updating pull requests',
+    );
   }
 }

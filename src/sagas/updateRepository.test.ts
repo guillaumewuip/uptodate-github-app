@@ -24,6 +24,7 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -42,6 +43,10 @@ import {
 import {
   updateRepositorySaga,
 } from './updateRepository';
+
+import {
+  readRepoConfigSaga,
+} from './readConfig';
 
 type OctokitPullsList = ContextPayloadPushAuthenticated['github']['pulls']['list'];
 type OctokitFindRepoInstallation =
@@ -99,8 +104,11 @@ describe('sagas/updateRepository', () => {
       },
     });
 
-    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: {
+        info: jest.fn(),
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -123,6 +131,8 @@ describe('sagas/updateRepository', () => {
       },
     };
 
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
+
     const {
       effects: {
         call,
@@ -130,7 +140,7 @@ describe('sagas/updateRepository', () => {
     } = await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as ContextPayloadPushAuthenticated,
+      context,
     )
       .run(false);
 
@@ -178,8 +188,11 @@ describe('sagas/updateRepository', () => {
       keepUpdatedLabel: label,
     };
 
-    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: {
+        info: jest.fn(),
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       config: jest.fn().mockResolvedValue(config),
       payload: {
         repository: {
@@ -203,6 +216,8 @@ describe('sagas/updateRepository', () => {
       },
     };
 
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
+
     const {
       effects: {
         call,
@@ -210,7 +225,7 @@ describe('sagas/updateRepository', () => {
     } = await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as ContextPayloadPushAuthenticated,
+      context,
     )
       .run(false);
 
@@ -223,10 +238,14 @@ describe('sagas/updateRepository', () => {
   });
 
   it('should handle fetch PRs error', async () => {
-    const listPulls = jest.fn().mockRejectedValue(new Error());
+    const listPullsError = new Error();
+    const listPulls = jest.fn().mockRejectedValue(listPullsError);
 
-    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: {
+        info: jest.fn(),
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -246,15 +265,21 @@ describe('sagas/updateRepository', () => {
       },
     };
 
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
+
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as ContextPayloadPushAuthenticated,
+      context,
     )
       .run(false);
 
-    expect(context.log).toHaveBeenLastCalledWith(
-      `Can't fetch pull requests for ${fullName}`,
+    expect(context.log.error).toHaveBeenCalledWith(
+      {
+        ...getLogInfo(context),
+        err: listPullsError,
+      },
+      'Can\'t fetch pull requests',
     );
   });
 
@@ -270,14 +295,17 @@ describe('sagas/updateRepository', () => {
       },
     ];
 
-    const findRepoInstallation = jest.fn().mockRejectedValue(new Error(''));
+    const getRepositoryAccessTokenError = new Error('');
 
     const listPulls = jest.fn().mockResolvedValue({
       data,
     });
 
-    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: {
+        info: jest.fn(),
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -286,29 +314,46 @@ describe('sagas/updateRepository', () => {
           name: 'uptodate-github-app',
           full_name: 'guillaumewuip/uptodate-github-app',
         },
+        installation: {
+          id: 1,
+        },
       },
       github: {
         pulls: {
           list: listPulls as unknown as OctokitPullsList,
         },
-        apps: {
-          findRepoInstallation: findRepoInstallation as unknown as OctokitFindRepoInstallation,
-        },
       },
+      config: jest.fn().mockResolvedValue({}),
     };
+
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
 
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as ContextPayloadPushAuthenticated,
+      context,
     )
-      .provide([
-        [callMatcher.fn(updatePullSaga), throwError(new Error())],
-      ])
+      .provide({
+        call(effect, next) {
+          if (effect.fn === readRepoConfigSaga) {
+            return next();
+          }
+
+          if (effect.fn === context.github.pulls.list) {
+            return next();
+          }
+
+          throw getRepositoryAccessTokenError;
+        },
+      })
       .run(false);
 
-    expect(context.log).toHaveBeenLastCalledWith(
-      `Can't get repositoryToken for ${fullName}`,
+    expect(context.log.error).toHaveBeenCalledWith(
+      {
+        ...getLogInfo(context),
+        err: getRepositoryAccessTokenError,
+      },
+      'Can\'t get repositoryToken',
     );
   });
 
@@ -334,8 +379,11 @@ describe('sagas/updateRepository', () => {
       data,
     });
 
-    const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
-      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: {
+        info: jest.fn(),
+        error: jest.fn(),
+      } as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -358,18 +406,26 @@ describe('sagas/updateRepository', () => {
       },
     };
 
+    const updatePullSagaError = new Error();
+
+    const context = mockedContext as unknown as ContextPayloadPushAuthenticated;
+
     await expectSaga(
       updateRepositorySaga,
       app,
-      context as unknown as ContextPayloadPushAuthenticated,
+      context,
     )
       .provide([
-        [callMatcher.fn(updatePullSaga), throwError(new Error())],
+        [callMatcher.fn(updatePullSaga), throwError(updatePullSagaError)],
       ])
       .run(false);
 
-    expect(context.log).toHaveBeenLastCalledWith(
-      `Unknown error updating pull requests for ${fullName}`,
+    expect(context.log.error).toHaveBeenCalledWith(
+      {
+        ...getLogInfo(context),
+        err: updatePullSagaError,
+      },
+      'Unknown error updating pull requests',
     );
   });
 });

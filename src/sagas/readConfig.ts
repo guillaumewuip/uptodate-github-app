@@ -8,7 +8,7 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  getRepositoryFullName,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -29,9 +29,13 @@ export function* readRepoConfigSaga(
 
     return config;
   } catch (error) {
-    const fullName = getRepositoryFullName(context);
-
-    context.log(`Can't get config for ${fullName}`);
+    context.log.error(
+      {
+        ...getLogInfo(context),
+        err: error,
+      },
+      'Can\'t get config',
+    );
 
     return defaultConfig;
   }

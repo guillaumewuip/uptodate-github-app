@@ -30,7 +30,7 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  getRepositoryFullName,
+  getLogInfo,
 } from '../entities/eventPayloads';
 
 import {
@@ -100,7 +100,10 @@ const errors = compose<typeof errorMessages, [string, string][], [string, Error,
 
 describe('sagas/updatePull', () => {
   const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
-    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
+    log: {
+      info: jest.fn(),
+      error: jest.fn(),
+    } as unknown as ContextPayloadPushAuthenticated['log'],
     issue: ({ body }: { body: string }) => ({
       body,
       owner,
@@ -117,7 +120,9 @@ describe('sagas/updatePull', () => {
           login: owner,
         },
         name: repo,
-        full_name: `${owner}/${repo}`,
+      },
+      installation: {
+        id: 1,
       },
     },
   };
@@ -126,7 +131,8 @@ describe('sagas/updatePull', () => {
 
   beforeEach(() => {
     (context.github.issues.createComment as unknown as jest.Mock).mockReset();
-    (context.log as unknown as jest.Mock).mockReset();
+    (context.log.info as unknown as jest.Mock).mockReset();
+    (context.log.error as unknown as jest.Mock).mockReset();
     jest.resetModules();
   });
 
@@ -180,9 +186,11 @@ describe('sagas/updatePull', () => {
   });
 
   it('handle createComment error', async () => {
+    const createCommentError = new Error();
+
     type CreateComment = typeof context.github.issues.createComment;
     context.github.issues.createComment =
-      jest.fn().mockRejectedValue(new Error('')) as unknown as CreateComment;
+      jest.fn().mockRejectedValue(createCommentError) as unknown as CreateComment;
 
     await expectSaga(
       updatePullSaga,
@@ -192,9 +200,15 @@ describe('sagas/updatePull', () => {
     )
       .run(false);
 
-    const log = context.log as unknown as jest.Mock;
-    expect(log).toHaveBeenLastCalledWith(
-      `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
+    const error = context.log.error as unknown as jest.Mock;
+    expect(error).toHaveBeenCalledWith(
+      {
+        ...getLogInfo(context),
+        body: `Pull request rebased on ${pull.base.ref}`,
+        err: createCommentError,
+        pullNumber: pull.number,
+      },
+      'Can\'t create comment',
     );
   });
 
@@ -260,9 +274,11 @@ describe('sagas/updatePull', () => {
       });
 
       it('should handle createComment error', async () => {
+        const createCommentError = new Error();
+
         type CreateComment = typeof context.github.issues.createComment;
         context.github.issues.createComment =
-          jest.fn().mockRejectedValue(new Error('')) as unknown as CreateComment;
+          jest.fn().mockRejectedValue(createCommentError) as unknown as CreateComment;
 
         await expectSaga(
           updatePullSaga,
@@ -275,9 +291,15 @@ describe('sagas/updatePull', () => {
           ])
           .run(false);
 
-        const log = context.log as unknown as jest.Mock;
-        expect(log).toHaveBeenLastCalledWith(
-          `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
+        const errorLog = context.log.error as unknown as jest.Mock;
+        expect(errorLog).toHaveBeenLastCalledWith(
+          {
+            ...getLogInfo(context),
+            body: errorMessage,
+            err: createCommentError,
+            pullNumber: pull.number,
+          },
+          'Can\'t create comment',
         );
       });
     },
