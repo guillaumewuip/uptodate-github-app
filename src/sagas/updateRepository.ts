@@ -19,17 +19,12 @@ import {
 } from 'ramda';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   hasLabel,
 } from '../entities/PullsListResponseItem';
 
 import {
   ContextPayloadPushAuthenticated,
   defaultBranch,
-  getInstallationId,
   getRepositoryFullName,
   getRepositoryName,
   getRepositoryOwnerLogin,
@@ -48,26 +43,7 @@ import {
   readRepoConfigSaga,
 } from './readConfig';
 
-export const REBASE_LABEL = 'keep-rebased';
-
-function* getRepositoryAccessToken(
-  app: Application,
-  context: ContextPayloadPushAuthenticated,
-): SagaIterator {
-  const id = getInstallationId(context);
-
-  const token = yield call(
-    app.app.getInstallationAccessToken,
-    {
-      installationId: id,
-    },
-  );
-
-  return token;
-}
-
 export function* updateRepositorySaga(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
 ): SagaIterator {
   const ownerLogin = getRepositoryOwnerLogin(context);
@@ -133,31 +109,10 @@ export function* updateRepositorySaga(
     return;
   }
 
-  let repositoryToken: string;
-
-  try {
-    repositoryToken = yield call(
-      getRepositoryAccessToken,
-      app,
-      context,
-    );
-  } catch (error) {
-    context.log.error(
-      {
-        ...getLogInfo(context),
-        err: error,
-      },
-      'Can\'t get repositoryToken',
-    );
-
-    return;
-  }
-
   const pullsUpdates = map(
     (pull: PullsListResponseItem) => call(
       updatePullSaga,
       context,
-      repositoryToken,
       pull,
     ),
     pullsToUpdate,

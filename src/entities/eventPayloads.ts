@@ -65,12 +65,8 @@ export const getRepositoryIdentifier = (context: ContextPayloadPushAuthenticated
   return `${getRepositoryId(context)}-${getRepositoryFullName(context)}`;
 };
 
-export const getInstallationId = (context: ContextPayloadPushAuthenticated) => {
-  return context.payload.installation.id;
-};
-
 export const getLogInfo = (context: ContextPayloadPushAuthenticated) => ({
-  owner: context.payload.repository.owner.login,
-  repo: context.payload.repository.name,
+  owner: getRepositoryOwnerLogin(context),
+  repo: getRepositoryName(context),
   installationId: context.payload.installation.id,
 });

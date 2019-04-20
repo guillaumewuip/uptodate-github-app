@@ -10,10 +10,6 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   REPOSITORY_UPDATED,
   RepositoryUpdatedAction,
 } from '../actions/updateRepository';
@@ -32,7 +28,6 @@ export type RepositoryUpdateTasks = {
 };
 
 export function* handleRepositoryUpdate(
-  app: Application,
   repositoriesUpdateTasks: RepositoryUpdateTasks,
   action: RepositoryUpdatedAction,
 ): SagaIterator {
@@ -61,18 +56,16 @@ export function* handleRepositoryUpdate(
 
   repositoriesUpdateTasks[repositoryIdentifier] = yield fork(
     updateRepositorySaga,
-    app,
     context,
   );
 }
 
-export function* updateRepositoriesSaga(app: Application): SagaIterator {
+export function* updateRepositoriesSaga(): SagaIterator {
   const repositoriesUpdateTasks: RepositoryUpdateTasks = {};
 
   yield takeEvery(
     REPOSITORY_UPDATED,
     handleRepositoryUpdate,
-    app,
     repositoriesUpdateTasks,
   );
 }

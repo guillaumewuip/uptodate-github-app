@@ -16,7 +16,7 @@
 - [ ] write README
 - [ ] merge PR once rebased if flag
 - [ ] add merge update method via config
-- [ ] use github-rebase 
+- [x] use github-rebase 
 
 ## Contributing
 

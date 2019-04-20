@@ -3,10 +3,6 @@ import{
 } from '@redux-saga/testing-utils';
 
 import {
-  Application,
-} from 'probot';
-
-import {
   REPOSITORY_UPDATED,
   repositoryUpdated,
 } from '../actions/updateRepository';
@@ -30,8 +26,6 @@ import {
 } from './updateRepositories';
 
 describe('sagas/updateRepositories', () => {
-  const app = {} as unknown as Application;
-
   const context1 = {
     log: {
       info: jest.fn(),
@@ -79,13 +73,11 @@ describe('sagas/updateRepositories', () => {
     it('should takeEvery REPOSITORY_UPDATED with handleRepositoryUpdate', async () => {
       await testSaga(
         updateRepositoriesSaga,
-        app,
       )
         .next()
         .takeEvery(
           REPOSITORY_UPDATED,
           handleRepositoryUpdate,
-          app,
           {},
         )
 
@@ -101,14 +93,12 @@ describe('sagas/updateRepositories', () => {
 
       await testSaga(
         handleRepositoryUpdate,
-        app,
         tasks,
         repository1UpdatedAction,
       )
         .next()
         .fork(
           updateRepositorySaga,
-          app,
           context1,
         )
 
@@ -131,7 +121,6 @@ describe('sagas/updateRepositories', () => {
 
       await testSaga(
         handleRepositoryUpdate,
-        app,
         tasks,
         repository1UpdatedAction,
       )
@@ -141,7 +130,6 @@ describe('sagas/updateRepositories', () => {
         .next()
         .fork(
           updateRepositorySaga,
-          app,
           context1,
         )
 

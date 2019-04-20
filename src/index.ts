@@ -28,7 +28,6 @@ export = (app: Application) => {
 
   sagaMiddleware.run(
     updateRepositoriesSaga,
-    app,
   );
 
   app.store = store;
