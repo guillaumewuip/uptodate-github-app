@@ -35,6 +35,7 @@ describe('sagas/updateRepositories', () => {
   } as unknown as Application;
 
   const context1 = {
+    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
     payload: {
       repository: {
         id: '1',
@@ -44,6 +45,7 @@ describe('sagas/updateRepositories', () => {
   } as unknown as ContextPayloadPushAuthenticated;
 
   const context2 = {
+    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
     payload: {
       repository: {
         id: '2',

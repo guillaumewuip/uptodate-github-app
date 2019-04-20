@@ -56,7 +56,6 @@ describe('sagas/updateRepository', () => {
   const getInstallationAccessToken = jest.fn().mockReturnValue(token);
 
   const mockedApp: RecursivePartial<Application> = {
-    log: jest.fn() as unknown as Application['log'],
     app: {
       getInstallationAccessToken: (
         getInstallationAccessToken as unknown as OctokitGetInstallationToken
@@ -67,7 +66,6 @@ describe('sagas/updateRepository', () => {
   const app = mockedApp as Application;
 
   beforeEach(() => {
-    (app.log as unknown as jest.Mock).mockReset();
     (app.app.getInstallationAccessToken as unknown as jest.Mock).mockReset();
   });
 
@@ -102,6 +100,7 @@ describe('sagas/updateRepository', () => {
     });
 
     const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -180,6 +179,7 @@ describe('sagas/updateRepository', () => {
     };
 
     const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       config: jest.fn().mockResolvedValue(config),
       payload: {
         repository: {
@@ -226,6 +226,7 @@ describe('sagas/updateRepository', () => {
     const listPulls = jest.fn().mockRejectedValue(new Error());
 
     const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -252,7 +253,7 @@ describe('sagas/updateRepository', () => {
     )
       .run(false);
 
-    expect(app.log).toHaveBeenLastCalledWith(
+    expect(context.log).toHaveBeenLastCalledWith(
       `Can't fetch pull requests for ${fullName}`,
     );
   });
@@ -276,6 +277,7 @@ describe('sagas/updateRepository', () => {
     });
 
     const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -305,7 +307,7 @@ describe('sagas/updateRepository', () => {
       ])
       .run(false);
 
-    expect(app.log).toHaveBeenLastCalledWith(
+    expect(context.log).toHaveBeenLastCalledWith(
       `Can't get repositoryToken for ${fullName}`,
     );
   });
@@ -333,6 +335,7 @@ describe('sagas/updateRepository', () => {
     });
 
     const context: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           owner: {
@@ -365,7 +368,7 @@ describe('sagas/updateRepository', () => {
       ])
       .run(false);
 
-    expect(app.log).toHaveBeenLastCalledWith(
+    expect(context.log).toHaveBeenLastCalledWith(
       `Unknown error updating pull requests for ${fullName}`,
     );
   });

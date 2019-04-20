@@ -77,7 +77,6 @@ export function* updateRepositorySaga(
 
   const config: Config = yield call(
     readRepoConfigSaga,
-    app,
     context,
   );
 
@@ -93,16 +92,16 @@ export function* updateRepositorySaga(
       },
     );
 
-    app.log(`Pull requests fetched for ${fullName}`);
+    context.log(`Pull requests fetched for ${fullName}`);
   } catch (error) {
-    app.log(`Can't fetch pull requests for ${fullName}`);
+    context.log(`Can't fetch pull requests for ${fullName}`);
 
     return;
   }
 
   const pulls = response.data;
 
-  app.log(`Filtering pull request by label ${config.keepUpdatedLabel} for ${fullName}`);
+  context.log(`Filtering pull request by label ${config.keepUpdatedLabel} for ${fullName}`);
 
   const pullsToUpdate = filter(
     hasLabel(config.keepUpdatedLabel),
@@ -110,7 +109,7 @@ export function* updateRepositorySaga(
   );
 
   if (isEmpty(pullsToUpdate)) {
-    app.log(`No pull requests to update for ${fullName}`);
+    context.log(`No pull requests to update for ${fullName}`);
 
     return;
   }
@@ -124,7 +123,7 @@ export function* updateRepositorySaga(
       context,
     );
   } catch (error) {
-    app.log(`Can't get repositoryToken for ${fullName}`);
+    context.log(`Can't get repositoryToken for ${fullName}`);
 
     return;
   }
@@ -132,7 +131,6 @@ export function* updateRepositorySaga(
   const pullsUpdates = map(
     (pull: PullsListResponseItem) => call(
       updatePullSaga,
-      app,
       context,
       repositoryToken,
       pull,
@@ -143,6 +141,6 @@ export function* updateRepositorySaga(
   try {
     yield all(pullsUpdates);
   } catch (error) {
-    app.log(`Unknown error updating pull requests for ${fullName}`);
+    context.log(`Unknown error updating pull requests for ${fullName}`);
   }
 }

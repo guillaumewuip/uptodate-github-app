@@ -7,10 +7,6 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   ContextPayloadPushAuthenticated,
   getRepositoryFullName,
 } from '../entities/eventPayloads';
@@ -22,7 +18,6 @@ import {
 } from '../entities/config';
 
 export function* readRepoConfigSaga(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
 ):SagaIterator {
   try {
@@ -36,7 +31,7 @@ export function* readRepoConfigSaga(
   } catch (error) {
     const fullName = getRepositoryFullName(context);
 
-    app.log(`Can't get config for ${fullName}`);
+    context.log(`Can't get config for ${fullName}`);
 
     return defaultConfig;
   }

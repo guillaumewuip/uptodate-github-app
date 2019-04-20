@@ -16,10 +16,6 @@ import {
 } from 'tmp';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   getPullNumber,
   getPullBaseBranch,
   getPullBranch,
@@ -60,7 +56,6 @@ const getRepoCloneUrl = (
 ) => `https://x-access-token:${token}@github.com/${owner}/${repo}.git`;
 
 function* sendComment(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
   params: {
     owner: string,
@@ -77,12 +72,11 @@ function* sendComment(
       params,
     );
   } catch (error) {
-    app.log(`Can't create comment for ${fullName} ${params.number}`);
+    context.log(`Can't create comment for ${fullName} ${params.number}`);
   }
 }
 
 function* handleError(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
   pull: PullsListResponseItem,
   error: GitError | Error,
@@ -98,7 +92,6 @@ function* handleError(
 
     yield call(
       sendComment,
-      app,
       context,
       params,
     );
@@ -115,7 +108,6 @@ function* handleError(
 
     yield call(
       sendComment,
-      app,
       context,
       params,
     );
@@ -136,14 +128,12 @@ function* handleError(
 
   yield call(
     sendComment,
-    app,
     context,
     params,
   );
 }
 
 function* handleSuccess(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
   pull: PullsListResponseItem,
   baseBranch: string,
@@ -161,17 +151,15 @@ function* handleSuccess(
   try {
     yield call(
       sendComment,
-      app,
       context,
       params,
     );
   } catch (error) {
-    app.log(`Can't create comment for ${fullName} ${pull.number}`);
+    context.log(`Can't create comment for ${fullName} ${pull.number}`);
   }
 }
 
 export function* updatePullSaga(
-  app: Application,
   context: ContextPayloadPushAuthenticated,
   token: string,
   pull: PullsListResponseItem,
@@ -185,7 +173,7 @@ export function* updatePullSaga(
   const branch = getPullBranch(pull);
 
   try {
-    app.log(`Updating ${fullName}/${branch}`);
+    context.log(`Updating ${fullName}/${branch}`);
 
     const repoCloneUrl = getRepoCloneUrl(token, ownerLogin, name);
 
@@ -199,11 +187,10 @@ export function* updatePullSaga(
       baseBranch,
     );
 
-    app.log(`Pull request rebase pushed for ${fullName}/${branch}`);
+    context.log(`Pull request rebase pushed for ${fullName}/${branch}`);
 
     yield call(
       handleSuccess,
-      app,
       context,
       pull,
       baseBranch,
@@ -213,11 +200,10 @@ export function* updatePullSaga(
       ? error.type
       : 'UNKNOWN_ERROR';
 
-    app.log(`${type} error updating ${fullName}/${branch}`);
+    context.log(`${type} error updating ${fullName}/${branch}`);
 
     yield call(
       handleError,
-      app,
       context,
       pull,
       error,

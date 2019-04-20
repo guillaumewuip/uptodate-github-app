@@ -40,13 +40,13 @@ export function* handleRepositoryUpdate(
   } = action;
 
   const repositoryIdentifier = getRepositoryIdentifier(context);
-  app.log(`Received ${repositoryIdentifier} update`);
+  context.log(`Received ${repositoryIdentifier} update`);
 
   const repositoryTask = repositoriesUpdateTasks[repositoryIdentifier];
 
   if (repositoryTask) {
     if (repositoryTask.isRunning()) {
-      app.log(`Cancelling ${repositoryIdentifier} running update task`);
+      context.log(`Cancelling ${repositoryIdentifier} running update task`);
     }
 
     yield cancel(repositoryTask);

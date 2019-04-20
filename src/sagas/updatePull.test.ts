@@ -29,10 +29,6 @@ import {
 } from '../types';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   ContextPayloadPushAuthenticated,
   getRepositoryFullName,
 } from '../entities/eventPayloads';
@@ -103,11 +99,8 @@ const errors = compose<typeof errorMessages, [string, string][], [string, Error,
 );
 
 describe('sagas/updatePull', () => {
-  const app = {
-    log: jest.fn(),
-  } as unknown as Application;
-
   const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+    log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
     issue: ({ body }: { body: string }) => ({
       body,
       owner,
@@ -133,7 +126,7 @@ describe('sagas/updatePull', () => {
 
   beforeEach(() => {
     (context.github.issues.createComment as unknown as jest.Mock).mockReset();
-    (app.log as unknown as jest.Mock).mockReset();
+    (context.log as unknown as jest.Mock).mockReset();
     jest.resetModules();
   });
 
@@ -152,7 +145,6 @@ describe('sagas/updatePull', () => {
   it('should call cloneRebaseAndPush correctly', async () => {
     await expectSaga(
       updatePullSaga,
-      app,
       context,
       token,
       pull,
@@ -172,7 +164,6 @@ describe('sagas/updatePull', () => {
   it('send comment after update', async () => {
     await expectSaga(
       updatePullSaga,
-      app,
       context,
       token,
       pull,
@@ -195,14 +186,13 @@ describe('sagas/updatePull', () => {
 
     await expectSaga(
       updatePullSaga,
-      app,
       context,
       token,
       pull,
     )
       .run(false);
 
-    const log = app.log as unknown as jest.Mock;
+    const log = context.log as unknown as jest.Mock;
     expect(log).toHaveBeenLastCalledWith(
       `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
     );
@@ -211,7 +201,6 @@ describe('sagas/updatePull', () => {
   it('remove tmp dir after update', async () => {
     await expectSaga(
       updatePullSaga,
-      app,
       context,
       token,
       pull,
@@ -224,7 +213,6 @@ describe('sagas/updatePull', () => {
 
   it('remove tmp dir if cancelled', async () => {
     const gen = updatePullSaga(
-      app,
       context,
       token,
       pull,
@@ -253,7 +241,6 @@ describe('sagas/updatePull', () => {
       it('should send comment', async () => {
         await expectSaga(
           updatePullSaga,
-          app,
           context,
           token,
           pull,
@@ -279,7 +266,6 @@ describe('sagas/updatePull', () => {
 
         await expectSaga(
           updatePullSaga,
-          app,
           context,
           token,
           pull,
@@ -289,7 +275,7 @@ describe('sagas/updatePull', () => {
           ])
           .run(false);
 
-        const log = app.log as unknown as jest.Mock;
+        const log = context.log as unknown as jest.Mock;
         expect(log).toHaveBeenLastCalledWith(
           `Can't create comment for ${getRepositoryFullName(context)} ${pull.number}`,
         );

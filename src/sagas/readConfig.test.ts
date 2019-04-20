@@ -7,10 +7,6 @@ import {
 } from 'probot';
 
 import {
-  Application,
-} from '../entities/Application';
-
-import {
   ContextPayloadPushAuthenticated,
 } from '../entities/eventPayloads';
 
@@ -28,15 +24,12 @@ import {
 
 describe('sagas/readRepoConfig', () => {
   it('should return the repo config', async () => {
-    const app = {
-      log: jest.fn(),
-    } as unknown as Application;
-
     const config = {
       test: 'test',
     };
 
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       config: jest.fn()
         .mockResolvedValue(config) as unknown as ContextPayloadPushAuthenticated['config'],
     };
@@ -44,7 +37,6 @@ describe('sagas/readRepoConfig', () => {
 
     await expectSaga(
       readRepoConfigSaga,
-      app,
       context,
     )
       .returns(config)
@@ -52,11 +44,8 @@ describe('sagas/readRepoConfig', () => {
   });
 
   it('should return the default config and log if error', async () => {
-    const app = {
-      log: jest.fn(),
-    } as unknown as Application;
-
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {
+      log: jest.fn() as unknown as ContextPayloadPushAuthenticated['log'],
       payload: {
         repository: {
           full_name: 'owner/repo',
@@ -69,13 +58,12 @@ describe('sagas/readRepoConfig', () => {
 
     await expectSaga(
       readRepoConfigSaga,
-      app,
       context,
     )
       .returns(defaultConfig)
       .run(false);
 
-    expect(app.log).toHaveBeenCalledWith(
+    expect(context.log).toHaveBeenCalledWith(
       `Can't get config for ${context.payload.repository.full_name}`,
     );
   });
