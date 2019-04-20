@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@types/redux-mock-store": "^1.0.0",
+    "github-rebase": "^1.0.0",
     "node-git": "^0.0.0",
     "nodegit": "^0.24.1",
     "probot": "^9.0.1",
