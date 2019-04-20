@@ -15,7 +15,7 @@
 - [x] refacto logs
 - [ ] write README
 - [ ] merge PR once rebased if flag
-- [ ] add merge update method via config
+- [x] add merge update method via config
 - [x] use github-rebase 
 
 ## Contributing

@@ -33,6 +33,7 @@ import {
 
 import {
   Config,
+  getKeepUpdatedLabel,
 } from '../entities/config';
 
 import {
@@ -96,7 +97,7 @@ export function* updateRepositorySaga(
   );
 
   const pullsToUpdate = filter(
-    hasLabel(config.keepUpdatedLabel),
+    hasLabel(getKeepUpdatedLabel(config)),
     pulls,
   );
 
@@ -113,6 +114,7 @@ export function* updateRepositorySaga(
     (pull: PullsListResponseItem) => call(
       updatePullSaga,
       context,
+      config,
       pull,
     ),
     pullsToUpdate,

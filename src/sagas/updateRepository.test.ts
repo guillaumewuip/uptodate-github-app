@@ -151,6 +151,7 @@ describe('sagas/updateRepository', () => {
 
     const config: Config = {
       keepUpdatedLabel: label,
+      updateMethod: 'rebase',
     };
 
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {

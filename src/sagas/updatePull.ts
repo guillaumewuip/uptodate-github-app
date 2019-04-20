@@ -17,14 +17,27 @@ import {
 import {
   getPullNumber,
   getPullBaseBranch,
+  getPullBranch,
 } from '../entities/PullsListResponseItem';
 
 import {
-  getRepositoryOwnerLogin,
   ContextPayloadPushAuthenticated,
+  getRepositoryOwnerLogin,
   getRepositoryName,
   getLogInfo,
 } from '../entities/eventPayloads';
+
+import {
+  Config,
+  getUpdateMethod,
+} from '../entities/config';
+
+export const UPDATE_SUCCESS_MESSAGES: {
+  [k in Config['updateMethod']]: (baseBranch: string) => string;
+} = {
+  merge: (baseBranch: string) => `Merged ${baseBranch} on pull request`,
+  rebase: (baseBranch: string) => `Pull request rebased on ${baseBranch}`,
+};
 
 function* sendComment(
   context: ContextPayloadPushAuthenticated,
@@ -57,11 +70,13 @@ function* sendComment(
 
 export function* updatePullSaga(
   context: ContextPayloadPushAuthenticated,
+  config: Config,
   pull: PullsListResponseItem,
 ): SagaIterator {
   const ownerLogin = getRepositoryOwnerLogin(context);
   const name = getRepositoryName(context);
   const baseBranch = getPullBaseBranch(pull);
+  const branch = getPullBranch(pull);
   const pullNumber = getPullNumber(pull);
 
   try {
@@ -72,6 +87,40 @@ export function* updatePullSaga(
       },
       'Updating pull request',
     );
+
+    const updateMethod = getUpdateMethod(config);
+
+    if (updateMethod === 'merge') {
+      yield call(
+        context.github.repos.merge,
+        {
+          owner: ownerLogin,
+          repo: name,
+          head: baseBranch,
+          base: branch,
+        },
+      );
+
+      context.log.info(
+        {
+          ...getLogInfo(context),
+          pullNumber,
+        },
+        'Pull request merge done',
+      );
+
+      const message = UPDATE_SUCCESS_MESSAGES.merge(baseBranch);
+      yield call(
+        sendComment,
+        context,
+        pullNumber,
+        message,
+      );
+
+      return;
+    }
+
+    // default to rebase
 
     yield call(
       rebasePullRequest,
@@ -89,10 +138,10 @@ export function* updatePullSaga(
         ...getLogInfo(context),
         pullNumber,
       },
-      'Pull request update done',
+      'Pull request rebase done',
     );
 
-    const message = `Pull request rebased on ${baseBranch}`;
+    const message = UPDATE_SUCCESS_MESSAGES.rebase(baseBranch);
     yield call(
       sendComment,
       context,
