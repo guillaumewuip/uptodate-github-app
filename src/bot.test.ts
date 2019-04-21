@@ -21,6 +21,10 @@ import {
   REPOSITORY_UPDATED,
 } from './actions/updateRepository';
 
+import {
+  PULL_REQUEST_STATUS_UPDATED,
+} from './actions/pullRequestStatusUpdated';
+
 const mockStore = configureStore();
 
 describe('bot', () => {
@@ -85,5 +89,67 @@ describe('bot', () => {
 
     const actions = store.getActions();
     expect(actions).toHaveLength(0);
+  });
+
+  it('should get check_suite.completed', async () => {
+    const checkSuiteEventPayload = {
+      repository: {
+        id: 1,
+        fullName: 'guillaumewuip/test',
+        default_branch: 'master',
+      },
+      installation: {
+        id: 1,
+      },
+      check_suite: {
+        pull_requests: [
+          {
+            number: 1,
+          },
+          {
+            number: 2,
+          },
+        ],
+      },
+    };
+
+    await probot.receive({
+      id: '1',
+      name: 'check_suite.completed',
+      payload: checkSuiteEventPayload,
+    });
+
+    const actions = store.getActions();
+    expect(actions).toHaveLength(2);
+
+    expect(actions[0].type).toEqual(PULL_REQUEST_STATUS_UPDATED);
+    expect(actions[1].type).toEqual(PULL_REQUEST_STATUS_UPDATED);
+  });
+
+  it('should get pull_request_review.submitted', async () => {
+    const pullRequestReviewEventPayload = {
+      repository: {
+        id: 1,
+        fullName: 'guillaumewuip/test',
+        default_branch: 'master',
+      },
+      installation: {
+        id: 1,
+      },
+      pull_request: {
+        number: 1,
+      },
+    };
+
+    await probot.receive({
+      id: '1',
+      name: 'pull_request_review.submitted',
+      payload: pullRequestReviewEventPayload,
+    });
+
+    const actions = store.getActions();
+    expect(actions).toHaveLength(1);
+
+    expect(actions[0].type).toEqual(PULL_REQUEST_STATUS_UPDATED);
   });
 });

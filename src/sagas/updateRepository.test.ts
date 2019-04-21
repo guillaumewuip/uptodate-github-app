@@ -20,8 +20,11 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  getLogInfo,
 } from '../entities/PayloadPush';
+
+import {
+  getLogInfo,
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   Config,
@@ -140,8 +143,8 @@ describe('sagas/updateRepository', () => {
     });
 
     const config: Config = {
+      ...defaultConfig,
       keepUpdatedLabel: label,
-      updateMethod: 'rebase',
     };
 
     const mockedContext: RecursivePartial<ContextPayloadPushAuthenticated> = {

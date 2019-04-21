@@ -7,9 +7,12 @@ import {
 } from 'redux-saga/effects';
 
 import {
-  ContextPayloadPushAuthenticated,
-  getLogInfo,
 } from '../entities/PayloadPush';
+
+import {
+  getLogInfo,
+  ContextWithRepositoryAuthenticated,
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   Config,
@@ -18,7 +21,7 @@ import {
 } from '../entities/config';
 
 export function* readRepoConfigSaga(
-  context: ContextPayloadPushAuthenticated,
+  context: ContextWithRepositoryAuthenticated,
 ):SagaIterator {
   try {
     const config: Config = yield call(

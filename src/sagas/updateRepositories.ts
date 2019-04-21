@@ -15,9 +15,9 @@ import {
 } from '../actions/updateRepository';
 
 import {
-  getRepositoryIdentifier,
   getLogInfo,
-} from '../entities/PayloadPush';
+  getRepositoryIdentifier,
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   updateRepositorySaga,

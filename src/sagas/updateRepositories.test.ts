@@ -9,8 +9,11 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  getRepositoryIdentifier,
 } from '../entities/PayloadPush';
+
+import {
+  getRepositoryIdentifier,
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   testSaga,

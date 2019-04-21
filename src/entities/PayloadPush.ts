@@ -11,6 +11,10 @@ import {
   equals,
 } from 'ramda';
 
+import {
+  getRepositoryDefaultBranch,
+} from './withRepositoryAuthenticated';
+
 type WebhookPayloadPushAuthenticated = WebhookPayloadPush & {
   installation: {
     id: number,
@@ -36,37 +40,8 @@ const branchUpdated = (context: ContextPayloadPushAuthenticated): string => {
   return branch;
 };
 
-export const defaultBranch = (context: ContextPayloadPushAuthenticated): string =>
-  context.payload.repository.default_branch;
-
 export const isDefaultBranchUpdated = (context: ContextPayloadPushAuthenticated): boolean => {
   const branch = branchUpdated(context);
 
-  return equals(branch, defaultBranch(context));
+  return equals(branch, getRepositoryDefaultBranch(context));
 };
-
-export const getRepositoryId = (context: ContextPayloadPushAuthenticated) => {
-  return context.payload.repository.id;
-};
-
-export const getRepositoryFullName = (context: ContextPayloadPushAuthenticated) => {
-  return context.payload.repository.full_name;
-};
-
-export const getRepositoryName = (context: ContextPayloadPushAuthenticated) => {
-  return context.payload.repository.name;
-};
-
-export const getRepositoryOwnerLogin = (context: ContextPayloadPushAuthenticated) => {
-  return context.payload.repository.owner.login;
-};
-
-export const getRepositoryIdentifier = (context: ContextPayloadPushAuthenticated) => {
-  return `${getRepositoryId(context)}-${getRepositoryFullName(context)}`;
-};
-
-export const getLogInfo = (context: ContextPayloadPushAuthenticated) => ({
-  owner: getRepositoryOwnerLogin(context),
-  repo: getRepositoryName(context),
-  installationId: context.payload.installation.id,
-});

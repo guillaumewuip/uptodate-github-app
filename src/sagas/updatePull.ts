@@ -22,10 +22,13 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
+} from '../entities/PayloadPush';
+
+import {
+  getLogInfo,
   getRepositoryOwnerLogin,
   getRepositoryName,
-  getLogInfo,
-} from '../entities/PayloadPush';
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   Config,

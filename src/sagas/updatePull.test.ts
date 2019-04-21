@@ -12,8 +12,11 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  getLogInfo,
 } from '../entities/PayloadPush';
+
+import {
+  getLogInfo,
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   getPullNumber,

@@ -13,6 +13,10 @@ import {
 } from './sagas/updateRepositories';
 
 import {
+  mergePullsSaga,
+} from './sagas/mergePulls';
+
+import {
   Application,
 } from './entities/Application';
 
@@ -28,6 +32,10 @@ export = (app: Application) => {
 
   sagaMiddleware.run(
     updateRepositoriesSaga,
+  );
+
+  sagaMiddleware.run(
+    mergePullsSaga,
   );
 
   app.store = store;

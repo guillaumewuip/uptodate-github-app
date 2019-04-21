@@ -24,12 +24,15 @@ import {
 
 import {
   ContextPayloadPushAuthenticated,
-  defaultBranch,
+} from '../entities/PayloadPush';
+
+import {
+  getLogInfo,
+  getRepositoryDefaultBranch,
   getRepositoryFullName,
   getRepositoryName,
   getRepositoryOwnerLogin,
-  getLogInfo,
-} from '../entities/PayloadPush';
+} from '../entities/withRepositoryAuthenticated';
 
 import {
   Config,
@@ -51,7 +54,7 @@ export function* updateRepositorySaga(
   const name = getRepositoryName(context);
   const fullName = getRepositoryFullName(context);
 
-  const defaultRepositoryBranch = defaultBranch(context);
+  const defaultRepositoryBranch = getRepositoryDefaultBranch(context);
 
   const config: Config = yield call(
     readRepoConfigSaga,
