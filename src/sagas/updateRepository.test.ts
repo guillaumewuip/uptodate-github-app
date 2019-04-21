@@ -11,10 +11,6 @@ import {
 } from 'redux-saga-test-plan/providers';
 
 import {
-  Application,
-} from 'probot';
-
-import {
   find,
 } from 'ramda';
 
@@ -25,7 +21,7 @@ import {
 import {
   ContextPayloadPushAuthenticated,
   getLogInfo,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   Config,
@@ -44,13 +40,7 @@ import {
   updateRepositorySaga,
 } from './updateRepository';
 
-import {
-  readRepoConfigSaga,
-} from './readConfig';
-
 type OctokitPullsList = ContextPayloadPushAuthenticated['github']['pulls']['list'];
-type OctokitFindRepoInstallation =
-  ContextPayloadPushAuthenticated['github']['apps']['findRepoInstallation'];
 
 describe('sagas/updateRepository', () => {
   const fullName = 'guillaumewuip/uptodate-github-app';

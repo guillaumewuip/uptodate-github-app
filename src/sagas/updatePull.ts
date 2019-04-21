@@ -25,7 +25,7 @@ import {
   getRepositoryOwnerLogin,
   getRepositoryName,
   getLogInfo,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   Config,

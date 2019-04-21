@@ -29,7 +29,7 @@ import {
   getRepositoryName,
   getRepositoryOwnerLogin,
   getLogInfo,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   Config,

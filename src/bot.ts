@@ -6,7 +6,7 @@ import {
   ContextPayloadPush,
   isAuthenticated,
   isDefaultBranchUpdated,
-} from './entities/eventPayloads';
+} from './entities/PayloadPush';
 
 import {
   repositoryUpdated,

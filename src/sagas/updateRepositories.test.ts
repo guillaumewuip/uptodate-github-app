@@ -10,7 +10,7 @@ import {
 import {
   ContextPayloadPushAuthenticated,
   getRepositoryIdentifier,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   testSaga,

@@ -5,7 +5,7 @@ import {
 import {
   ContextPayloadPushAuthenticated,
   getLogInfo,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   defaultConfig,

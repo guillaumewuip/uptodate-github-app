@@ -1,6 +1,6 @@
 import {
   ContextPayloadPushAuthenticated,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 export const REPOSITORY_UPDATED = 'REPOSITORY_UPDATED';
 

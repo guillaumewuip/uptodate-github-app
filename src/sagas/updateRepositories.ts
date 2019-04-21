@@ -17,7 +17,7 @@ import {
 import {
   getRepositoryIdentifier,
   getLogInfo,
-} from '../entities/eventPayloads';
+} from '../entities/PayloadPush';
 
 import {
   updateRepositorySaga,
