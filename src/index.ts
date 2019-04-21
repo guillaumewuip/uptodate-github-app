@@ -17,6 +17,10 @@ import {
 } from './sagas/mergePulls';
 
 import {
+  deleteBranchesSaga,
+} from './sagas/deleteBranch';
+
+import {
   Application,
 } from './entities/Application';
 
@@ -36,6 +40,10 @@ export = (app: Application) => {
 
   sagaMiddleware.run(
     mergePullsSaga,
+  );
+
+  sagaMiddleware.run(
+    deleteBranchesSaga,
   );
 
   app.store = store;

@@ -25,12 +25,22 @@ import {
 } from './entities/PayloadPullRequestReview';
 
 import {
+  ContextPayloadPullRequest,
+  isAuthenticated as isPullRequestAuthenticated,
+  isMerged,
+} from './entities/PayloadPullRequest';
+
+import {
   repositoryUpdated,
 } from './actions/updateRepository';
 
 import {
   pullRequestsStatusUpdated,
 } from './actions/pullRequestStatusUpdated';
+
+import {
+  pullRequestMerged,
+} from './actions/pullRequestMerged';
 
 export = (app: Application) => {
   app.on('push', async (context: ContextPayloadPush) => {
@@ -74,5 +84,19 @@ export = (app: Application) => {
     const pullNumber = getPullNumber(context);
 
     app.store.dispatch(pullRequestsStatusUpdated(context, pullNumber));
+  });
+
+  app.on('pull_request.closed', async (context: ContextPayloadPullRequest) => {
+    if (!isPullRequestAuthenticated(context)) {
+      app.log.info('Received non-authenticated pull_request.closed payload');
+
+      return;
+    }
+
+    const merged = isMerged(context);
+
+    if (merged) {
+      app.store.dispatch(pullRequestMerged(context));
+    }
   });
 };

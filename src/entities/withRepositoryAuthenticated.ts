@@ -10,8 +10,13 @@ import {
   ContextPayloadPullRequestReviewAuthenticated,
 } from './PayloadPullRequestReview';
 
+import {
+  ContextPayloadPullRequestAuthenticated,
+} from './PayloadPullRequest';
+
 export type ContextWithRepositoryAuthenticated = ContextPayloadPushAuthenticated
  | ContextPayloadCheckSuiteAuthenticated
+ | ContextPayloadPullRequestAuthenticated
  | ContextPayloadPullRequestReviewAuthenticated;
 
 export const getRepositoryDefaultBranch = (

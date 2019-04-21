@@ -14,9 +14,10 @@
 - [x] force-with-lease instead of force
 - [x] refacto logs
 - [ ] write README
-- [ ] merge PR once rebased if flag
+- [x] merge PR once rebased if flag
 - [x] add merge update method via config
 - [x] use github-rebase 
+- [x] remove branch once merge
 
 ## Contributing
 

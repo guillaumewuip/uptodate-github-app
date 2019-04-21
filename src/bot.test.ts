@@ -25,6 +25,10 @@ import {
   PULL_REQUEST_STATUS_UPDATED,
 } from './actions/pullRequestStatusUpdated';
 
+import {
+  PULL_REQUEST_MERGED,
+} from './actions/pullRequestMerged';
+
 const mockStore = configureStore();
 
 describe('bot', () => {
@@ -151,5 +155,34 @@ describe('bot', () => {
     expect(actions).toHaveLength(1);
 
     expect(actions[0].type).toEqual(PULL_REQUEST_STATUS_UPDATED);
+  });
+
+  it('should get pull_request.closed', async () => {
+    const pullRequestReviewEventPayload = {
+      repository: {
+        id: 1,
+        fullName: 'guillaumewuip/test',
+        default_branch: 'master',
+      },
+      installation: {
+        id: 1,
+      },
+      pull_request: {
+        number: 1,
+        merged: true,
+      },
+      action: 'closed',
+    };
+
+    await probot.receive({
+      id: '1',
+      name: 'pull_request.closed',
+      payload: pullRequestReviewEventPayload,
+    });
+
+    const actions = store.getActions();
+    expect(actions).toHaveLength(1);
+
+    expect(actions[0].type).toEqual(PULL_REQUEST_MERGED);
   });
 });
